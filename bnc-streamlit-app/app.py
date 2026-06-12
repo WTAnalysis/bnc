@@ -21,6 +21,7 @@ from live_scores import (
     save_status_cache,
 )
 from predictions import (
+    apply_live_scores,
     load_predictions,
     prediction_fixture_table,
     prediction_league_table,
@@ -164,7 +165,11 @@ def stage_comparison_chart_html(stage_totals: pd.DataFrame) -> str:
 
 
 data = build_league_data(WORKBOOK_PATH, POINTS_DIR)
-predictions = load_predictions(WORKBOOK_PATH)
+live_statuses = load_status_cache(LIVE_STATUS_PATH)
+predictions = apply_live_scores(
+    load_predictions(WORKBOOK_PATH),
+    live_statuses,
+)
 prediction_table = prediction_league_table(predictions)
 missing_due = due_missing_matches(data.schedule, POINTS_DIR)
 fixture_data = fixture_status(data.schedule, POINTS_DIR)
@@ -294,6 +299,19 @@ with teams_tab:
 with predictions_tab:
     st.subheader("Predictions League Table")
     st.caption("Correct score = 3 points. Correct result = 1 point. Incorrect = 0 points.")
+    live_prediction_rows = predictions[
+        predictions["id"].astype(str).isin(
+            set(live_statuses["matchlink"].astype(str))
+            if not live_statuses.empty
+            else set()
+        )
+        & predictions["Score"].notna()
+    ]
+    if not live_prediction_rows.empty:
+        st.info(
+            "The table includes the latest checked live score and is provisional "
+            "until the match is complete."
+        )
     st.dataframe(
         prediction_table,
         hide_index=True,
@@ -335,7 +353,6 @@ with data_tab:
         "time and uses the provider's match status rather than guessing from kickoff."
     )
 
-    live_statuses = load_status_cache(LIVE_STATUS_PATH)
     check_col, refresh_col = st.columns(2)
     with check_col:
         check_live = st.button(

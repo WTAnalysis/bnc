@@ -1,10 +1,16 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pandas as pd
+
 from config import POINTS_DIR, WORKBOOK_PATH
 from league_data import build_league_data, due_missing_matches, ordered_lineup
 from live_scores import candidate_matches, format_england_time
-from predictions import load_predictions, prediction_league_table
+from predictions import (
+    apply_live_scores,
+    load_predictions,
+    prediction_league_table,
+)
 
 
 def test_builds_all_managers_and_stages():
@@ -83,3 +89,27 @@ def test_prediction_league_table_uses_result_codes():
     assert table.loc["Ian", "Points"] == 4
     assert table.loc["Taylor", "Points"] == 2
     assert table.loc["Will S", "Points"] == 1
+
+
+def test_live_score_updates_prediction_score_and_points():
+    predictions = load_predictions(WORKBOOK_PATH)
+    live_statuses = pd.DataFrame(
+        [
+            {
+                "matchlink": "y1ow9ht5baxn64i01hq9moes",
+                "Home Score": 0,
+                "Away Score": 1,
+            }
+        ]
+    )
+    updated = apply_live_scores(predictions, live_statuses)
+    fixture = updated[
+        updated["id"].astype(str).str.strip() == "y1ow9ht5baxn64i01hq9moes"
+    ].iloc[0]
+    assert fixture["Score"] == "0-1"
+    assert fixture["ATR"] == "W"
+    assert fixture["WSR"] == "L"
+    original_table = prediction_league_table(predictions).set_index("Manager")
+    updated_table = prediction_league_table(updated).set_index("Manager")
+    assert updated_table.loc["Taylor", "Points"] == original_table.loc["Taylor", "Points"] + 3
+    assert updated_table.loc["Will S", "Points"] == original_table.loc["Will S", "Points"]

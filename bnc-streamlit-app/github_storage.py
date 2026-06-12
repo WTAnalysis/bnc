@@ -11,9 +11,12 @@ def upload_file(
     repository: str,
     token: str,
     branch: str = "main",
-    remote_directory: str = "data/points",
+    remote_directory: str = "bnc-streamlit-app/data/points",
 ) -> str:
     """Create or update a file through the GitHub Contents API."""
+    repository = repository.strip()
+    token = token.strip()
+    branch = branch.strip()
     remote_path = f"{remote_directory.strip('/')}/{local_path.name}"
     url = f"https://api.github.com/repos/{repository}/contents/{remote_path}"
     headers = {
