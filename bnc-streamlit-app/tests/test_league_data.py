@@ -4,6 +4,7 @@ from pathlib import Path
 from config import POINTS_DIR, WORKBOOK_PATH
 from league_data import build_league_data, due_missing_matches, ordered_lineup
 from live_scores import candidate_matches, format_england_time
+from predictions import load_predictions, prediction_league_table
 
 
 def test_builds_all_managers_and_stages():
@@ -73,3 +74,12 @@ def test_live_candidates_include_nearby_fixture():
     )
     assert "y1ow9ht5baxn64i01hq9moes" in set(nearby["matchlink"])
     assert format_england_time("2026-06-12T18:40:00Z").endswith("19:40:00 BST")
+
+
+def test_prediction_league_table_uses_result_codes():
+    predictions = load_predictions(WORKBOOK_PATH)
+    table = prediction_league_table(predictions).set_index("Manager")
+    assert table.loc["Barlow", "Points"] == 4
+    assert table.loc["Ian", "Points"] == 4
+    assert table.loc["Taylor", "Points"] == 2
+    assert table.loc["Will S", "Points"] == 1

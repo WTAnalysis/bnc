@@ -20,6 +20,11 @@ from live_scores import (
     load_status_cache,
     save_status_cache,
 )
+from predictions import (
+    load_predictions,
+    prediction_fixture_table,
+    prediction_league_table,
+)
 
 
 st.set_page_config(
@@ -159,6 +164,8 @@ def stage_comparison_chart_html(stage_totals: pd.DataFrame) -> str:
 
 
 data = build_league_data(WORKBOOK_PATH, POINTS_DIR)
+predictions = load_predictions(WORKBOOK_PATH)
+prediction_table = prediction_league_table(predictions)
 missing_due = due_missing_matches(data.schedule, POINTS_DIR)
 fixture_data = fixture_status(data.schedule, POINTS_DIR)
 ready_count = int((fixture_data["Data"] == "Ready").sum())
@@ -177,8 +184,8 @@ metric_2.metric("Leader points", f"{leader['Points']:.1f}" if leader is not None
 metric_3.metric("Matches scored", f"{ready_count} / {len(data.schedule)}")
 metric_4.metric("Ready to process", len(missing_due))
 
-overview_tab, stages_tab, teams_tab, data_tab = st.tabs(
-    ["League", "Stages", "Teams", "Match data"]
+overview_tab, stages_tab, teams_tab, predictions_tab, data_tab = st.tabs(
+    ["League", "Stages", "Teams", "Predictions", "Match data"]
 )
 
 with overview_tab:
@@ -282,6 +289,43 @@ with teams_tab:
         hide_index=True,
         use_container_width=True,
         height=615,
+    )
+
+with predictions_tab:
+    st.subheader("Predictions League Table")
+    st.caption("Correct score = 3 points. Correct result = 1 point. Incorrect = 0 points.")
+    st.dataframe(
+        prediction_table,
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Rank": st.column_config.NumberColumn(width="small"),
+            "Points": st.column_config.NumberColumn(width="small"),
+            "Correct Scores": st.column_config.NumberColumn(width="small"),
+            "Correct Results": st.column_config.NumberColumn(width="small"),
+        },
+    )
+
+    st.subheader("Scores and Predictions")
+    prediction_rounds = [
+        value for value in predictions["Round"].dropna().astype(str).unique()
+    ]
+    selected_prediction_rounds = st.multiselect(
+        "Filter prediction rounds",
+        prediction_rounds,
+        default=prediction_rounds,
+    )
+    prediction_display = prediction_fixture_table(
+        predictions[predictions["Round"].astype(str).isin(selected_prediction_rounds)]
+    )
+    st.dataframe(
+        prediction_display,
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Date": st.column_config.DateColumn(format="DD MMM YYYY"),
+            "Time": st.column_config.TextColumn("Time (England)"),
+        },
     )
 
 with data_tab:
@@ -491,11 +535,42 @@ with data_tab:
 
     st.subheader("Fixture data status")
     stage_filter = st.multiselect("Filter stages", STAGES, default=STAGES)
-    scored_fixtures = fixture_data[
-        fixture_data["Round"].isin(stage_filter) & fixture_data["Data"].ne("Missing")
+    live_ids = (
+        set(live_matches["matchlink"].astype(str))
+        if not live_matches.empty
+        else set()
+    )
+    visible_fixtures = fixture_data[
+        fixture_data["Round"].isin(stage_filter)
+        & (
+            fixture_data["Data"].ne("Missing")
+            | fixture_data["matchlink"].isin(live_ids)
+        )
     ].copy()
-    status_display = scored_fixtures[
-        ["kickoff_uk", "Fixture", "Round", "Status", "Data", "matchlink"]
+    visible_fixtures["Provider Status"] = visible_fixtures["matchlink"].map(
+        live_statuses.set_index("matchlink")["Provider Status"].to_dict()
+        if not live_statuses.empty
+        else {}
+    )
+    visible_fixtures["Live Score"] = visible_fixtures["matchlink"].map(
+        live_statuses.set_index("matchlink")["Score"].to_dict()
+        if not live_statuses.empty and "Score" in live_statuses
+        else {}
+    )
+    visible_fixtures.loc[
+        visible_fixtures["matchlink"].isin(live_ids), "Status"
+    ] = "Live"
+    status_display = visible_fixtures[
+        [
+            "kickoff_uk",
+            "Fixture",
+            "Round",
+            "Status",
+            "Provider Status",
+            "Live Score",
+            "Data",
+            "matchlink",
+        ]
     ].sort_values("kickoff_uk", ascending=False)
     st.dataframe(
         status_display,
@@ -510,6 +585,7 @@ with data_tab:
         },
     )
 
+    scored_fixtures = visible_fixtures[visible_fixtures["Data"].ne("Missing")].copy()
     if not scored_fixtures.empty:
         st.subheader("Match player scores")
         scored_fixtures = scored_fixtures.sort_values("kickoff", ascending=False)

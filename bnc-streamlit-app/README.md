@@ -82,3 +82,19 @@ On the **Match data** tab:
 
 Live checks are deliberately button-driven so viewing or filtering the
 dashboard does not repeatedly call the provider or silently alter standings.
+
+Provider-confirmed ongoing fixtures are also included in **Fixture data
+status**, even before their points workbook exists.
+
+## Predictions
+
+The **Predictions** tab reads the workbook's `Predictor` sheet. It awards:
+
+- `W`: 3 points for a correct score;
+- `D`: 1 point for a correct result;
+- `L`: 0 points.
+
+Manager result columns map as follows: Barlow/SBR, Taylor/ATR, Ian/IUR,
+Will T/WTR, Joe/JSR, Dan/DWR, Andy/AMR and Will S/WSR. Save the workbook in
+Excel before uploading it so the formula-result cells have current cached
+values for Streamlit to read.
