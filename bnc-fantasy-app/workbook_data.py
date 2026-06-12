@@ -1,18 +1,14 @@
 from __future__ import annotations
 
 import io
-import re
 import unicodedata
 from datetime import datetime, timezone
-from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import pandas as pd
-import requests
 
 from config import (
     COMPETITOR_NAMES,
     COMPETITOR_SHEETS,
-    ONEDRIVE_SHARE_URL,
     STAGES,
 )
 
@@ -20,50 +16,6 @@ from config import (
 def _normalise_name(value: object) -> str:
     text = unicodedata.normalize("NFKD", str(value or ""))
     return "".join(char for char in text if not unicodedata.combining(char)).casefold().strip()
-
-
-def _with_download_flag(url: str) -> str:
-    parsed = urlparse(url)
-    query = parse_qs(parsed.query)
-    query["download"] = ["1"]
-    return urlunparse(parsed._replace(query=urlencode(query, doseq=True)))
-
-
-def _is_xlsx(content: bytes) -> bool:
-    return content[:4] == b"PK\x03\x04"
-
-
-def download_competition_workbook(
-    url: str = ONEDRIVE_SHARE_URL,
-    *,
-    timeout: int = 45,
-) -> bytes:
-    """Download an anonymously shared OneDrive workbook."""
-    candidates = [url, _with_download_flag(url)]
-    errors: list[str] = []
-
-    for candidate in candidates:
-        try:
-            response = requests.get(
-                candidate,
-                headers={"User-Agent": "Mozilla/5.0"},
-                timeout=timeout,
-                allow_redirects=True,
-            )
-            if response.ok and _is_xlsx(response.content):
-                return response.content
-            errors.append(
-                f"{response.status_code} from {response.url} "
-                f"({response.headers.get('content-type', 'unknown content type')})"
-            )
-        except requests.RequestException as exc:
-            errors.append(str(exc))
-
-    raise RuntimeError(
-        "The OneDrive workbook is not available as an anonymous XLSX download. "
-        "Set ONEDRIVE_DOWNLOAD_URL in Streamlit secrets to an 'Anyone with the link' "
-        "download URL. Attempts: " + " | ".join(errors)
-    )
 
 
 def read_workbook(

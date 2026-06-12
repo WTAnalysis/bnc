@@ -2,7 +2,8 @@
 
 A public Streamlit app that:
 
-- reads the current schedule and stage selections from the OneDrive workbook;
+- reads the current schedule and stage selections from an Excel workbook stored in
+  the GitHub repository;
 - processes completed Opta/Perform matches from the previous 48 hours;
 - commits stable per-match player scores to `data/match_scores.csv` on GitHub;
 - displays an overall league table, one tab per stage, and a completed-match selector.
@@ -10,19 +11,23 @@ A public Streamlit app that:
 ## Repository setup
 
 1. Put this folder in a GitHub repository.
-2. Keep `data/playerlist.xlsx` and `data/match_scores.csv` in the repository.
+2. Keep these files in the repository:
+   - `data/BnC World Cup 2026.xlsx`
+   - `data/playerlist.xlsx`
+   - `data/match_scores.csv`
 3. Deploy `app.py` on Streamlit Community Cloud.
 4. Add the values from `.streamlit/secrets.example.toml` to the app's Streamlit secrets.
 
-## OneDrive requirement
+## Updating the competition workbook
 
-The supplied `1drv.ms` link currently returns an authentication/blocked response to
-non-browser clients. In OneDrive, share the workbook as **Anyone with the link can
-view**, obtain an anonymous direct-download URL, and set it as
-`ONEDRIVE_DOWNLOAD_URL`.
+When selections or schedule details change:
 
-The app never edits the OneDrive workbook. It treats that workbook as the live source
-for schedule and team selections.
+1. Download the latest workbook from OneDrive.
+2. Replace `data/BnC World Cup 2026.xlsx` in GitHub, keeping the exact filename.
+3. Commit the replacement.
+
+Streamlit Community Cloud will detect the commit and redeploy the app. The replacement
+workbook becomes the source for schedule and team selections.
 
 ## GitHub persistence
 

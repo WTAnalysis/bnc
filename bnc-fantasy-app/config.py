@@ -2,13 +2,9 @@ from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR / "data"
+COMPETITION_PATH = DATA_DIR / "BnC World Cup 2026.xlsx"
 PLAYERLIST_PATH = DATA_DIR / "playerlist.xlsx"
 SCORES_PATH = DATA_DIR / "match_scores.csv"
-
-ONEDRIVE_SHARE_URL = (
-    "https://1drv.ms/x/c/557e8c8e9b1f0372/"
-    "IQC-IY7KLvyRT6yusoHDuQ4CAVIxQnABPfDi3aYa2QLzjx4?e=c463AU"
-)
 
 COMPETITOR_SHEETS = [
     "Barlow",

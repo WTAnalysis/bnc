@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import io
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
 from config import (
-    ONEDRIVE_SHARE_URL,
+    COMPETITION_PATH,
     PLAYERLIST_PATH,
     SCORE_COLUMNS,
     SCORES_PATH,
@@ -15,7 +14,7 @@ from config import (
 )
 from github_store import commit_scores
 from scoring import score_match
-from workbook_data import download_competition_workbook, matches_to_process, read_workbook
+from workbook_data import matches_to_process, read_workbook
 
 st.set_page_config(
     page_title="BnC World Cup Fantasy",
@@ -41,10 +40,10 @@ def secret(name: str, default: str = "") -> str:
         return default
 
 
-@st.cache_data(ttl=300, show_spinner="Loading the live competition workbook...")
-def load_live_workbook(download_url: str):
-    workbook_bytes = download_competition_workbook(download_url)
-    return read_workbook(workbook_bytes)
+@st.cache_data(show_spinner="Loading the competition workbook...")
+def load_competition_workbook(path: str, modified_time: float):
+    del modified_time
+    return read_workbook(Path(path).read_bytes())
 
 
 @st.cache_data(ttl=120)
@@ -90,17 +89,25 @@ def score_views(
 
 
 st.title("BnC World Cup Fantasy")
-st.caption("Live selections from OneDrive, completed match scores cached in GitHub.")
+st.caption("Competition selections and completed match scores loaded from GitHub.")
 
-download_url = secret("ONEDRIVE_DOWNLOAD_URL", ONEDRIVE_SHARE_URL)
 try:
-    schedule, picked_players, selections = load_live_workbook(download_url)
-except Exception as exc:
-    st.error(str(exc))
+    schedule, picked_players, selections = load_competition_workbook(
+        str(COMPETITION_PATH),
+        COMPETITION_PATH.stat().st_mtime,
+    )
+except FileNotFoundError:
+    st.error(f"Competition workbook not found: `{COMPETITION_PATH.name}`")
     st.info(
-        "The supplied OneDrive link currently requires Microsoft authentication. "
-        "Change its sharing permission to 'Anyone with the link', then put the direct "
-        "download URL in `.streamlit/secrets.toml` as `ONEDRIVE_DOWNLOAD_URL`."
+        "Upload the workbook to the repository's `data` folder using the exact "
+        "filename `BnC World Cup 2026.xlsx`."
+    )
+    st.stop()
+except Exception as exc:
+    st.error(f"Could not read the competition workbook: {exc}")
+    st.info(
+        "Check that the uploaded file is a valid Excel workbook and still contains "
+        "the `schedule`, `PickedPlayers`, and eight competitor sheets."
     )
     st.stop()
 
