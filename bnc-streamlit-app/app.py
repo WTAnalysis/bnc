@@ -2,18 +2,23 @@ from __future__ import annotations
 
 import os
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
 from config import POINTS_DIR, STAGE_LABELS, STAGES, WORKBOOK_PATH
 from github_storage import upload_file
-from league_data import build_league_data, due_missing_matches, fixture_status
+from league_data import (
+    build_league_data,
+    due_missing_matches,
+    fixture_status,
+    ordered_lineup,
+)
 from match_batch import process_matches
 
 
 st.set_page_config(
     page_title="BnC World Cup 2026",
-    page_icon="⚽",
     layout="wide",
 )
 
@@ -54,6 +59,63 @@ def format_points(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     return result
 
 
+def stacked_stage_chart(stage_table: pd.DataFrame) -> alt.Chart:
+    chart_data = (
+        stage_table.reset_index()
+        .melt(id_vars=["Manager", "Total"], var_name="Stage", value_name="Points")
+    )
+    manager_order = stage_table.index.tolist()
+    max_total = max(float(stage_table["Total"].max()), 1.0)
+    return (
+        alt.Chart(chart_data)
+        .mark_bar()
+        .encode(
+            x=alt.X(
+                "Manager:N",
+                sort=manager_order,
+                title=None,
+                axis=alt.Axis(labelAngle=0),
+            ),
+            y=alt.Y(
+                "sum(Points):Q",
+                title="Points",
+                scale=alt.Scale(domain=[0, max_total], nice=False),
+            ),
+            color=alt.Color("Stage:N", title="Stage"),
+            order=alt.Order("Stage:N"),
+            tooltip=[
+                alt.Tooltip("Manager:N"),
+                alt.Tooltip("Stage:N"),
+                alt.Tooltip("Points:Q", format=".1f"),
+            ],
+        )
+        .properties(height=420)
+    )
+
+
+def stage_comparison_chart(stage_totals: pd.DataFrame) -> alt.Chart:
+    chart_data = stage_totals[["Manager", "Points"]].copy()
+    manager_order = chart_data["Manager"].tolist()
+    max_score = max(float(chart_data["Points"].max()), 1.0)
+    return (
+        alt.Chart(chart_data)
+        .mark_bar()
+        .encode(
+            y=alt.Y("Manager:N", sort=manager_order, title=None),
+            x=alt.X(
+                "Points:Q",
+                title="Points",
+                scale=alt.Scale(domain=[0, max_score], nice=False),
+            ),
+            tooltip=[
+                alt.Tooltip("Manager:N"),
+                alt.Tooltip("Points:Q", format=".1f"),
+            ],
+        )
+        .properties(height=420)
+    )
+
+
 data = build_league_data(WORKBOOK_PATH, POINTS_DIR)
 missing_due = due_missing_matches(data.schedule, POINTS_DIR)
 fixture_data = fixture_status(data.schedule, POINTS_DIR)
@@ -78,19 +140,6 @@ overview_tab, stages_tab, teams_tab, data_tab = st.tabs(
 )
 
 with overview_tab:
-    st.subheader("Overall league table")
-    league_display = format_points(data.league_table, ["Points"])
-    st.dataframe(
-        league_display,
-        hide_index=True,
-        use_container_width=True,
-        column_config={
-            "Rank": st.column_config.NumberColumn(width="small"),
-            "Manager": st.column_config.TextColumn(width="medium"),
-            "Points": st.column_config.NumberColumn(format="%.1f"),
-        },
-    )
-
     stage_pivot = (
         data.stage_totals.pivot(index="Manager", columns="Stage", values="Points")
         .reindex(columns=STAGES)
@@ -99,8 +148,10 @@ with overview_tab:
     stage_pivot.columns = [STAGE_LABELS[column] for column in stage_pivot.columns]
     stage_pivot["Total"] = stage_pivot.sum(axis=1)
     stage_pivot = stage_pivot.sort_values("Total", ascending=False)
+    stage_columns = [column for column in stage_pivot.columns if column != "Total"]
+    stage_pivot = stage_pivot[["Total"] + stage_columns]
 
-    st.subheader("Points by stage")
+    st.subheader("League Table")
     st.dataframe(
         stage_pivot.round(1),
         use_container_width=True,
@@ -109,7 +160,7 @@ with overview_tab:
             for column in stage_pivot.columns
         },
     )
-    st.bar_chart(stage_pivot.drop(columns="Total"), stack=True, height=420)
+    st.altair_chart(stacked_stage_chart(stage_pivot), use_container_width=True)
 
 with stages_tab:
     selected_stage = st.selectbox(
@@ -131,25 +182,24 @@ with stages_tab:
         )
     with right:
         st.subheader("Manager comparison")
-        chart_data = stage_totals.set_index("Manager")[["Points"]]
-        st.bar_chart(chart_data, horizontal=True, height=420)
+        st.altair_chart(stage_comparison_chart(stage_totals), use_container_width=True)
 
-    st.subheader("Stage lineups")
+    st.subheader("Starting Lineups")
     stage_lineups = data.lineup_scores[data.lineup_scores["Stage"] == selected_stage]
     manager_columns = st.columns(2)
     for index, manager in enumerate(data.league_table["Manager"]):
         with manager_columns[index % 2]:
-            lineup = stage_lineups[stage_lineups["Manager"] == manager].copy()
+            lineup = ordered_lineup(
+                stage_lineups[stage_lineups["Manager"] == manager].copy()
+            )
             total = lineup["Lineup Points"].sum()
-            st.markdown(f"#### {manager} · {total:.1f} pts")
-            lineup = lineup[
-                ["Position", "Player", "Selection", "Player Points", "Multiplier", "Lineup Points"]
-            ]
+            st.markdown(f"#### {manager} - {total:.1f} pts")
+            lineup = lineup[["Position", "Player", "Selection", "Player Points"]]
             st.dataframe(
-                format_points(lineup, ["Player Points", "Multiplier", "Lineup Points"]),
+                format_points(lineup, ["Player Points"]),
                 hide_index=True,
                 use_container_width=True,
-                height=350,
+                height=615,
             )
 
 with teams_tab:
@@ -172,29 +222,24 @@ with teams_tab:
         use_container_width=True,
     )
 
+    st.subheader("Starting Lineup")
     team_stage = st.selectbox(
         "Lineup stage",
         STAGES,
         format_func=lambda value: STAGE_LABELS[value],
         key="team_stage",
     )
-    team_lineup = data.lineup_scores[
-        (data.lineup_scores["Manager"] == manager)
-        & (data.lineup_scores["Stage"] == team_stage)
-    ][
-        [
-            "Position",
-            "Player",
-            "Selection",
-            "Player Points",
-            "Multiplier",
-            "Lineup Points",
+    team_lineup = ordered_lineup(
+        data.lineup_scores[
+            (data.lineup_scores["Manager"] == manager)
+            & (data.lineup_scores["Stage"] == team_stage)
         ]
-    ]
+    )[["Position", "Player", "Selection", "Player Points"]]
     st.dataframe(
-        format_points(team_lineup, ["Player Points", "Multiplier", "Lineup Points"]),
+        format_points(team_lineup, ["Player Points"]),
         hide_index=True,
         use_container_width=True,
+        height=615,
     )
 
 with data_tab:
@@ -259,7 +304,10 @@ with data_tab:
 
     st.subheader("Fixture data status")
     stage_filter = st.multiselect("Filter stages", STAGES, default=STAGES)
-    status_display = fixture_data[fixture_data["Round"].isin(stage_filter)][
+    scored_fixtures = fixture_data[
+        fixture_data["Round"].isin(stage_filter) & fixture_data["Data"].ne("Missing")
+    ].copy()
+    status_display = scored_fixtures[
         ["kickoff", "Fixture", "Round", "Status", "Data", "matchlink"]
     ].sort_values("kickoff", ascending=False)
     st.dataframe(
@@ -271,6 +319,61 @@ with data_tab:
             "matchlink": st.column_config.TextColumn("Match ID"),
         },
     )
+
+    if not scored_fixtures.empty:
+        st.subheader("Match player scores")
+        scored_fixtures = scored_fixtures.sort_values("kickoff", ascending=False)
+        match_options = scored_fixtures["matchlink"].tolist()
+        fixture_labels = (
+            scored_fixtures.set_index("matchlink")
+            .apply(
+                lambda row: (
+                    f"{row['Fixture']} - "
+                    f"{row['kickoff'].strftime('%d %b %Y, %H:%M UTC')}"
+                ),
+                axis=1,
+            )
+            .to_dict()
+        )
+        selected_match = st.selectbox(
+            "Select a scored fixture",
+            match_options,
+            format_func=lambda match_id: fixture_labels[match_id],
+        )
+        match_scores = data.player_match_points[
+            data.player_match_points["match_id"] == selected_match
+        ].copy()
+        manager_lookup = data.picked_players[
+            ["player_id", "Manager"]
+        ].drop_duplicates(subset="player_id")
+        match_scores = match_scores.merge(manager_lookup, on="player_id", how="left")
+        match_scores["Manager"] = match_scores["Manager"].fillna("Unowned")
+        match_scores = (
+            match_scores[match_scores["Total Score"] > 0]
+            .sort_values(["Total Score", "player_name"], ascending=[False, True])
+            .rename(
+                columns={
+                    "player_name": "Player",
+                    "team_name": "Nation",
+                    "Total Score": "Points",
+                }
+            )
+        )
+        if match_scores.empty:
+            st.info("No players recorded a positive score in this match.")
+        else:
+            match_scores.insert(0, "Rank", range(1, len(match_scores) + 1))
+            st.dataframe(
+                format_points(
+                    match_scores[["Rank", "Player", "Nation", "Manager", "Points"]],
+                    ["Points"],
+                ),
+                hide_index=True,
+                use_container_width=True,
+                column_config={
+                    "Points": st.column_config.NumberColumn(format="%.1f"),
+                },
+            )
 
     repository, token, branch = github_settings()
     if repository and token:

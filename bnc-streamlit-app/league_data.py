@@ -30,6 +30,31 @@ def normalize_manager(value: object) -> str:
     return str(value).strip().replace("WillT", "Will T").replace("WillS", "Will S")
 
 
+def ordered_lineup(lineup: pd.DataFrame) -> pd.DataFrame:
+    selection_order = {
+        "Picked": 0,
+        "Captain": 0,
+        "Vice Captain": 0,
+        "Sub GK": 1,
+        "Sub 1": 2,
+        "Sub 2": 3,
+        "Sub 3": 4,
+        "Sub 4": 5,
+    }
+    position_order = {"GK": 0, "DEF": 1, "MID": 2, "FWD": 3}
+    result = lineup.copy()
+    result["_selection_order"] = result["Selection"].map(selection_order).fillna(6)
+    result["_position_order"] = result["Position"].map(position_order).fillna(4)
+    return (
+        result.sort_values(
+            ["_selection_order", "_position_order", "Player"],
+            ascending=[True, True, True],
+        )
+        .drop(columns=["_selection_order", "_position_order"])
+        .reset_index(drop=True)
+    )
+
+
 def load_schedule(workbook_path: Path) -> pd.DataFrame:
     schedule = pd.read_excel(workbook_path, sheet_name="schedule")
     schedule.columns = [str(column).strip() for column in schedule.columns]
