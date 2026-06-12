@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 
-import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -32,6 +31,32 @@ st.markdown(
     .bnc-title {font-size: 2.75rem; font-weight: 800; line-height: 1.05;
                 margin: .2rem 0 .5rem;}
     .bnc-subtitle {color: #5f6b75; font-size: 1.05rem; margin-bottom: 1.4rem;}
+    .stage-chart {height: 360px; display: flex; align-items: flex-end; gap: 2%;
+                  position: relative; border-left: 1px solid #9aa39d;
+                  border-bottom: 1px solid #9aa39d; padding: 0 2%;}
+    .stage-grid {position: absolute; left: 0; right: 0; border-top: 1px dashed #cbd1cd;}
+    .stage-grid.top {top: 0;} .stage-grid.middle {bottom: 50%;}
+    .stage-bar-group {height: 100%; flex: 1; display: flex; flex-direction: column;
+                      justify-content: flex-end; align-items: center; z-index: 1;}
+    .stage-bar {height: 88%; width: 65%; display: flex; flex-direction: column-reverse;
+                justify-content: flex-start;}
+    .stage-segment {width: 100%; min-height: 0;}
+    .stage-total {height: 6%; font-size: .8rem; font-weight: 700;}
+    .stage-manager {height: 6%; font-size: .8rem; font-weight: 600; white-space: nowrap;}
+    .chart-scale-label {font-size: .75rem; color: #5f6b75; margin-bottom: -12px;}
+    .chart-zero {font-size: .75rem; color: #5f6b75; margin-top: -14px;}
+    .stage-legend {display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0 22px;}
+    .stage-legend span {font-size: .78rem; color: #465149;}
+    .stage-legend i {display: inline-block; width: 10px; height: 10px;
+                     margin-right: 5px; border-radius: 2px;}
+    .horizontal-max {text-align: right; color: #5f6b75; font-size: .78rem;}
+    .horizontal-chart {display: flex; flex-direction: column; gap: 14px; padding-top: 10px;}
+    .horizontal-row {display: grid; grid-template-columns: 90px 1fr 45px;
+                     gap: 10px; align-items: center;}
+    .horizontal-name {font-size: .85rem; text-align: right;}
+    .horizontal-track {height: 28px; background: #e3e8e4; border-radius: 3px; overflow: hidden;}
+    .horizontal-bar {height: 100%; background: #0B6E4F;}
+    .horizontal-value {font-size: .85rem; font-weight: 700;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -59,60 +84,71 @@ def format_points(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     return result
 
 
-def stacked_stage_chart(stage_table: pd.DataFrame) -> alt.Chart:
-    chart_data = (
-        stage_table.reset_index()
-        .melt(id_vars=["Manager", "Total"], var_name="Stage", value_name="Points")
-    )
-    manager_order = stage_table.index.tolist()
+CHART_COLORS = [
+    "#0B6E4F",
+    "#2A9D8F",
+    "#78C6A3",
+    "#E9C46A",
+    "#F4A261",
+    "#E76F51",
+    "#577590",
+    "#8E6C88",
+]
+
+
+def stacked_stage_chart_html(stage_table: pd.DataFrame) -> str:
     max_total = max(float(stage_table["Total"].max()), 1.0)
-    return (
-        alt.Chart(chart_data)
-        .mark_bar()
-        .encode(
-            x=alt.X(
-                "Manager:N",
-                sort=manager_order,
-                title=None,
-                axis=alt.Axis(labelAngle=0),
-            ),
-            y=alt.Y(
-                "sum(Points):Q",
-                title="Points",
-                scale=alt.Scale(domain=[0, max_total], nice=False),
-            ),
-            color=alt.Color("Stage:N", title="Stage"),
-            order=alt.Order("Stage:N"),
-            tooltip=[
-                alt.Tooltip("Manager:N"),
-                alt.Tooltip("Stage:N"),
-                alt.Tooltip("Points:Q", format=".1f"),
-            ],
+    stage_columns = [column for column in stage_table.columns if column != "Total"]
+    bars = []
+    for manager, row in stage_table.iterrows():
+        segments = []
+        for index, stage in enumerate(stage_columns):
+            points = float(row[stage])
+            height = (points / max_total) * 100
+            segments.append(
+                f'<div class="stage-segment" title="{stage}: {points:.1f}" '
+                f'style="height:{height:.4f}%;background:{CHART_COLORS[index]}"></div>'
+            )
+        bars.append(
+            '<div class="stage-bar-group">'
+            f'<div class="stage-total">{float(row["Total"]):.1f}</div>'
+            f'<div class="stage-bar">{"".join(segments)}</div>'
+            f'<div class="stage-manager">{manager}</div>'
+            "</div>"
         )
-        .properties(height=420)
+    legend = "".join(
+        f'<span><i style="background:{CHART_COLORS[index]}"></i>{stage}</span>'
+        for index, stage in enumerate(stage_columns)
     )
+    return f"""
+    <div class="chart-scale-label">{max_total:.1f}</div>
+    <div class="stage-chart">
+      <div class="stage-grid top"></div>
+      <div class="stage-grid middle"></div>
+      {"".join(bars)}
+    </div>
+    <div class="chart-zero">0</div>
+    <div class="stage-legend">{legend}</div>
+    """
 
 
-def stage_comparison_chart(stage_totals: pd.DataFrame) -> alt.Chart:
-    chart_data = stage_totals[["Manager", "Points"]].copy()
-    manager_order = chart_data["Manager"].tolist()
-    max_score = max(float(chart_data["Points"].max()), 1.0)
-    return (
-        alt.Chart(chart_data)
-        .mark_bar()
-        .encode(
-            y=alt.Y("Manager:N", sort=manager_order, title=None),
-            x=alt.X(
-                "Points:Q",
-                title="Points",
-                scale=alt.Scale(domain=[0, max_score], nice=False),
-            ),
-            tooltip=[
-                alt.Tooltip("Manager:N"),
-                alt.Tooltip("Points:Q", format=".1f"),
-            ],
+def stage_comparison_chart_html(stage_totals: pd.DataFrame) -> str:
+    max_score = max(float(stage_totals["Points"].max()), 1.0)
+    bars = []
+    for row in stage_totals.itertuples(index=False):
+        width = (float(row.Points) / max_score) * 100
+        bars.append(
+            '<div class="horizontal-row">'
+            f'<div class="horizontal-name">{row.Manager}</div>'
+            '<div class="horizontal-track">'
+            f'<div class="horizontal-bar" style="width:{width:.4f}%"></div>'
+            "</div>"
+            f'<div class="horizontal-value">{float(row.Points):.1f}</div>'
+            "</div>"
         )
-        .properties(height=420)
+    return (
+        f'<div class="horizontal-max">Scale: 0 to {max_score:.1f}</div>'
+        f'<div class="horizontal-chart">{"".join(bars)}</div>'
     )
 
 
@@ -160,7 +196,7 @@ with overview_tab:
             for column in stage_pivot.columns
         },
     )
-    st.altair_chart(stacked_stage_chart(stage_pivot), use_container_width=True)
+    st.markdown(stacked_stage_chart_html(stage_pivot), unsafe_allow_html=True)
 
 with stages_tab:
     selected_stage = st.selectbox(
@@ -182,7 +218,7 @@ with stages_tab:
         )
     with right:
         st.subheader("Manager comparison")
-        st.altair_chart(stage_comparison_chart(stage_totals), use_container_width=True)
+        st.markdown(stage_comparison_chart_html(stage_totals), unsafe_allow_html=True)
 
     st.subheader("Starting Lineups")
     stage_lineups = data.lineup_scores[data.lineup_scores["Stage"] == selected_stage]

@@ -1,5 +1,4 @@
 streamlit>=1.40,<2
-altair>=5.0,<6
 pandas>=2.2,<3
 numpy>=1.26,<3
 openpyxl>=3.1,<4
