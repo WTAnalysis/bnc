@@ -67,6 +67,7 @@ def load_schedule(workbook_path: Path) -> pd.DataFrame:
         utc=True,
         errors="coerce",
     )
+    schedule["kickoff_uk"] = schedule["kickoff"].dt.tz_convert("Europe/London")
     return schedule[schedule["Round"].isin(STAGES)].copy()
 
 

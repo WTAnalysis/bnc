@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import streamlit as st
 
-from config import POINTS_DIR, STAGE_LABELS, STAGES, WORKBOOK_PATH
+from config import LIVE_STATUS_PATH, POINTS_DIR, STAGE_LABELS, STAGES, WORKBOOK_PATH
 from github_storage import upload_file
 from league_data import (
     build_league_data,
@@ -14,6 +14,12 @@ from league_data import (
     ordered_lineup,
 )
 from match_batch import process_matches
+from live_scores import (
+    fetch_candidate_statuses,
+    format_england_time,
+    load_status_cache,
+    save_status_cache,
+)
 
 
 st.set_page_config(
@@ -279,6 +285,141 @@ with teams_tab:
     )
 
 with data_tab:
+    st.subheader("Live matches")
+    st.write(
+        "Workbook kickoffs are UTC. The app displays live information in England "
+        "time and uses the provider's match status rather than guessing from kickoff."
+    )
+
+    live_statuses = load_status_cache(LIVE_STATUS_PATH)
+    check_col, refresh_col = st.columns(2)
+    with check_col:
+        check_live = st.button(
+            "Check live scores",
+            type="primary",
+            use_container_width=True,
+        )
+
+    if check_live:
+        with st.spinner("Checking nearby fixtures with the live provider..."):
+            live_statuses, live_errors = fetch_candidate_statuses(data.schedule)
+            save_status_cache(live_statuses, LIVE_STATUS_PATH)
+            st.session_state["live_errors"] = live_errors
+        st.rerun()
+
+    live_matches = pd.DataFrame()
+    if not live_statuses.empty:
+        live_statuses["Is Live"] = live_statuses["Is Live"].fillna(False).astype(bool)
+        live_matches = live_statuses[live_statuses["Is Live"]].copy()
+        live_statuses["Score"] = live_statuses.apply(
+            lambda row: (
+                f"{int(row['Home Score'])}-{int(row['Away Score'])}"
+                if pd.notna(row.get("Home Score")) and pd.notna(row.get("Away Score"))
+                else "-"
+            ),
+            axis=1,
+        )
+        live_statuses["Kickoff (England)"] = live_statuses["Kickoff UTC"].map(
+            format_england_time
+        )
+        live_statuses["Provider updated"] = live_statuses[
+            "Provider Updated UTC"
+        ].map(format_england_time)
+        live_statuses["App checked"] = live_statuses["Checked At UTC"].map(
+            format_england_time
+        )
+
+        st.dataframe(
+            live_statuses[
+                [
+                    "Fixture",
+                    "Kickoff (England)",
+                    "Provider Status",
+                    "Score",
+                    "Provider updated",
+                    "App checked",
+                ]
+            ],
+            hide_index=True,
+            use_container_width=True,
+        )
+
+        latest_check = live_statuses["Checked At UTC"].dropna()
+        if not latest_check.empty:
+            st.caption(
+                "Live feed last checked by this app: "
+                f"**{format_england_time(latest_check.max())}**"
+            )
+
+    if live_statuses.empty:
+        st.info(
+            "No live check has been saved yet. Click **Check live scores** near kickoff."
+        )
+    elif live_matches.empty:
+        st.info("The provider does not currently report any nearby fixture as live.")
+    else:
+        st.success(
+            f"{len(live_matches)} fixture(s) currently reported live. "
+            "Fantasy points shown after refresh are provisional."
+        )
+
+    with refresh_col:
+        refresh_live = st.button(
+            "Refresh live fantasy points",
+            disabled=live_matches.empty,
+            use_container_width=True,
+        )
+
+    if refresh_live:
+        progress = st.progress(0, text="Refreshing live fantasy points...")
+
+        def update_live_progress(index: int, total: int, match_id: str) -> None:
+            progress.progress(
+                index / total,
+                text=f"Refreshing {index} of {total}: {match_id}",
+            )
+
+        live_results = process_matches(
+            live_matches[["matchlink"]],
+            update_live_progress,
+        )
+        repository, token, branch = github_settings()
+        for result in live_results:
+            if result["success"] and repository and token:
+                try:
+                    upload_file(
+                        result["path"],
+                        repository=repository,
+                        token=token,
+                        branch=branch,
+                    )
+                except Exception as exc:
+                    result["error"] = f"Scored locally; GitHub upload failed: {exc}"
+        st.session_state["live_processing_results"] = live_results
+        progress.empty()
+        st.rerun()
+
+    live_results = st.session_state.get("live_processing_results", [])
+    if live_results:
+        live_successes = sum(result["success"] for result in live_results)
+        st.success(
+            f"Refreshed provisional fantasy points for "
+            f"{live_successes} of {len(live_results)} live match(es)."
+        )
+        live_failures = [result for result in live_results if result["error"]]
+        if live_failures:
+            st.warning("Some live matches could not be fully refreshed.")
+            st.dataframe(
+                pd.DataFrame(live_failures)[["match_id", "error"]],
+                hide_index=True,
+            )
+
+    live_errors = st.session_state.get("live_errors", [])
+    if live_errors:
+        with st.expander("Live feed check warnings"):
+            st.dataframe(pd.DataFrame(live_errors), hide_index=True)
+
+    st.divider()
     st.subheader("Update match points")
     st.write(
         "The app processes fixtures after a 2.5-hour completion buffer. "
@@ -289,9 +430,19 @@ with data_tab:
         st.success("All completed fixtures currently have point data.")
     else:
         due_display = missing_due[
-            ["kickoff", "description", "Home_Team", "Away_Team", "Round", "matchlink"]
+            ["kickoff_uk", "description", "Home_Team", "Away_Team", "Round", "matchlink"]
         ].copy()
-        st.dataframe(due_display, hide_index=True, use_container_width=True)
+        st.dataframe(
+            due_display,
+            hide_index=True,
+            use_container_width=True,
+            column_config={
+                "kickoff_uk": st.column_config.DatetimeColumn(
+                    "Kickoff (England)",
+                    format="DD MMM YYYY, HH:mm",
+                ),
+            },
+        )
 
         if st.button(
             f"Run {len(missing_due)} missing completed match(es)",
@@ -344,14 +495,17 @@ with data_tab:
         fixture_data["Round"].isin(stage_filter) & fixture_data["Data"].ne("Missing")
     ].copy()
     status_display = scored_fixtures[
-        ["kickoff", "Fixture", "Round", "Status", "Data", "matchlink"]
-    ].sort_values("kickoff", ascending=False)
+        ["kickoff_uk", "Fixture", "Round", "Status", "Data", "matchlink"]
+    ].sort_values("kickoff_uk", ascending=False)
     st.dataframe(
         status_display,
         hide_index=True,
         use_container_width=True,
         column_config={
-            "kickoff": st.column_config.DatetimeColumn("Kickoff (UTC)", format="DD MMM YYYY, HH:mm"),
+            "kickoff_uk": st.column_config.DatetimeColumn(
+                "Kickoff (England)",
+                format="DD MMM YYYY, HH:mm",
+            ),
             "matchlink": st.column_config.TextColumn("Match ID"),
         },
     )
@@ -365,7 +519,7 @@ with data_tab:
             .apply(
                 lambda row: (
                     f"{row['Fixture']} - "
-                    f"{row['kickoff'].strftime('%d %b %Y, %H:%M UTC')}"
+                    f"{row['kickoff_uk'].strftime('%d %b %Y, %H:%M %Z')}"
                 ),
                 axis=1,
             )

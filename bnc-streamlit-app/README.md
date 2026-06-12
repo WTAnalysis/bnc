@@ -63,3 +63,22 @@ becomes eligible 2.5 hours after kickoff. Clicking the update button:
 5. uploads the new file to GitHub when repository secrets are configured.
 
 The completion buffer is configurable in `config.py`.
+
+## Live matches
+
+Workbook times are UTC. The dashboard converts them to `Europe/London`, so
+summer fixtures display in BST and winter fixtures display in GMT.
+
+On the **Match data** tab:
+
+1. **Check live scores** queries provider status for fixtures near the current
+   time. It displays the score, provider status, provider update time and the
+   time the app checked the feed.
+2. **Refresh live fantasy points** is enabled only when the provider confirms
+   a match is live. It reruns the scoring engine and updates the standings with
+   provisional points.
+3. Run the match again after the provider reports `Played` to retain the final
+   points file.
+
+Live checks are deliberately button-driven so viewing or filtering the
+dashboard does not repeatedly call the provider or silently alter standings.

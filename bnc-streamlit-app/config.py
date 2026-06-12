@@ -9,6 +9,7 @@ FORMATION_PATH = DATA_DIR / "formation_dict.xlsx"
 EVENTS_PATH = DATA_DIR / "Opta Events.xlsx"
 QUALIFIERS_PATH = DATA_DIR / "Opta Qualifiers.xlsx"
 PLAYERLIST_PATH = DATA_DIR / "playerlist.xlsx"
+LIVE_STATUS_PATH = DATA_DIR / "live_status.json"
 
 MANAGER_SHEETS = {
     "Barlow": "Barlow",
