@@ -11,21 +11,11 @@
     "Is Complete": false,
     "Provider Updated UTC": "2026-06-13T20:37:39+00:00",
     "Checked At UTC": "2026-06-13T21:59:14.737372+00:00",
-    "Kickoff UTC": "2026-06-13T22:00:00+00:00"
-  },
-  {
-    "matchlink": "2lzhf44ic9g2dj0l29fji2xw4",
-    "Fixture": "Qatar vs Switzerland",
-    "Home": "Qatar",
-    "Away": "Switzerland",
-    "Home Score": 1.0,
-    "Away Score": 1.0,
-    "Provider Status": "Played",
-    "Is Live": false,
-    "Is Complete": true,
-    "Provider Updated UTC": "2026-06-13T21:47:19+00:00",
-    "Checked At UTC": "2026-06-13T21:59:15.142864+00:00",
-    "Kickoff UTC": "2026-06-13T19:00:00+00:00"
+    "Kickoff UTC": "2026-06-13T22:00:00+00:00",
+    "Score": "-",
+    "Kickoff (England)": "13 Jun 2026, 23:00:00 BST",
+    "Provider updated": "13 Jun 2026, 21:37:39 BST",
+    "App checked": "13 Jun 2026, 22:59:14 BST"
   },
   {
     "matchlink": "49wa9ymnt0trv2mjruak556ok",
@@ -39,7 +29,11 @@
     "Is Complete": true,
     "Provider Updated UTC": "2026-06-13T14:46:11+00:00",
     "Checked At UTC": "2026-06-13T21:59:15.790038+00:00",
-    "Kickoff UTC": "2026-06-13T01:00:00+00:00"
+    "Kickoff UTC": "2026-06-13T01:00:00+00:00",
+    "Score": "4-1",
+    "Kickoff (England)": "13 Jun 2026, 02:00:00 BST",
+    "Provider updated": "13 Jun 2026, 15:46:11 BST",
+    "App checked": "13 Jun 2026, 22:59:15 BST"
   },
   {
     "matchlink": "y1ow9ht5baxn64i01hq9moes",
@@ -53,6 +47,28 @@
     "Is Complete": true,
     "Provider Updated UTC": "2026-06-12T23:50:19+00:00",
     "Checked At UTC": "2026-06-13T21:59:16.170729+00:00",
-    "Kickoff UTC": "2026-06-12T19:00:00+00:00"
+    "Kickoff UTC": "2026-06-12T19:00:00+00:00",
+    "Score": "1-1",
+    "Kickoff (England)": "12 Jun 2026, 20:00:00 BST",
+    "Provider updated": "13 Jun 2026, 00:50:19 BST",
+    "App checked": "13 Jun 2026, 22:59:16 BST"
+  },
+  {
+    "matchlink": "2lzhf44ic9g2dj0l29fji2xw4",
+    "Fixture": "Qatar vs Switzerland",
+    "Home": "Qatar",
+    "Away": "Switzerland",
+    "Home Score": 1.0,
+    "Away Score": 1.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-06-13T21:47:19+00:00",
+    "Checked At UTC": "2026-06-13T21:59:32.085170+00:00",
+    "Kickoff UTC": "2026-06-13T19:00:00+00:00",
+    "Score": NaN,
+    "Kickoff (England)": NaN,
+    "Provider updated": NaN,
+    "App checked": NaN
   }
 ]
