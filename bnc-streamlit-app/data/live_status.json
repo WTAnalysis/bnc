@@ -1,16 +1,44 @@
 [
   {
+    "matchlink": "ar8b186wqraa80u0vpi2e4nis",
+    "Fixture": "Brazil vs Morocco",
+    "Home": "Brazil",
+    "Away": "Morocco",
+    "Home Score": NaN,
+    "Away Score": NaN,
+    "Provider Status": "Fixture",
+    "Is Live": false,
+    "Is Complete": false,
+    "Provider Updated UTC": "2026-06-13T20:37:39+00:00",
+    "Checked At UTC": "2026-06-13T21:07:13.617399+00:00",
+    "Kickoff UTC": "2026-06-13T22:00:00+00:00"
+  },
+  {
+    "matchlink": "2lzhf44ic9g2dj0l29fji2xw4",
+    "Fixture": "Qatar vs Switzerland",
+    "Home": "Qatar",
+    "Away": "Switzerland",
+    "Home Score": 1.0,
+    "Away Score": 1.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-06-13T21:04:59+00:00",
+    "Checked At UTC": "2026-06-13T21:07:13.912092+00:00",
+    "Kickoff UTC": "2026-06-13T19:00:00+00:00"
+  },
+  {
     "matchlink": "49wa9ymnt0trv2mjruak556ok",
     "Fixture": "United States vs Paraguay",
     "Home": "United States",
     "Away": "Paraguay",
-    "Home Score": 4,
-    "Away Score": 1,
+    "Home Score": 4.0,
+    "Away Score": 1.0,
     "Provider Status": "Played",
     "Is Live": false,
     "Is Complete": true,
-    "Provider Updated UTC": "2026-06-13T08:28:50+00:00",
-    "Checked At UTC": "2026-06-13T13:13:35.911003+00:00",
+    "Provider Updated UTC": "2026-06-13T14:46:11+00:00",
+    "Checked At UTC": "2026-06-13T21:07:14.396764+00:00",
     "Kickoff UTC": "2026-06-13T01:00:00+00:00"
   },
   {
@@ -18,13 +46,13 @@
     "Fixture": "Canada vs Bosnia-Herzegovina",
     "Home": "Canada",
     "Away": "Bosnia-Herzegovina",
-    "Home Score": 1,
-    "Away Score": 1,
+    "Home Score": 1.0,
+    "Away Score": 1.0,
     "Provider Status": "Played",
     "Is Live": false,
     "Is Complete": true,
     "Provider Updated UTC": "2026-06-12T23:50:19+00:00",
-    "Checked At UTC": "2026-06-13T13:13:36.396523+00:00",
+    "Checked At UTC": "2026-06-13T21:07:14.779960+00:00",
     "Kickoff UTC": "2026-06-12T19:00:00+00:00"
   }
 ]
