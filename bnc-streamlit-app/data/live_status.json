@@ -1,0 +1,30 @@
+[
+  {
+    "matchlink": "49wa9ymnt0trv2mjruak556ok",
+    "Fixture": "United States vs Paraguay",
+    "Home": "United States",
+    "Away": "Paraguay",
+    "Home Score": 4,
+    "Away Score": 1,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-06-13T08:28:50+00:00",
+    "Checked At UTC": "2026-06-13T13:13:35.911003+00:00",
+    "Kickoff UTC": "2026-06-13T01:00:00+00:00"
+  },
+  {
+    "matchlink": "y1ow9ht5baxn64i01hq9moes",
+    "Fixture": "Canada vs Bosnia-Herzegovina",
+    "Home": "Canada",
+    "Away": "Bosnia-Herzegovina",
+    "Home Score": 1,
+    "Away Score": 1,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-06-12T23:50:19+00:00",
+    "Checked At UTC": "2026-06-13T13:13:36.396523+00:00",
+    "Kickoff UTC": "2026-06-12T19:00:00+00:00"
+  }
+]
