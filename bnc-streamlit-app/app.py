@@ -16,8 +16,10 @@ from league_data import (
 from match_batch import process_matches
 from live_scores import (
     fetch_candidate_statuses,
+    fetch_statuses,
     format_england_time,
     load_status_cache,
+    merge_status_cache,
     save_status_cache,
 )
 from predictions import (
@@ -86,6 +88,20 @@ def github_settings() -> tuple[str, str, str]:
     except FileNotFoundError:
         pass
     return repository, token, branch
+
+
+def persist_live_statuses(statuses: pd.DataFrame) -> str | None:
+    save_status_cache(statuses, LIVE_STATUS_PATH)
+    repository, token, branch = github_settings()
+    if not repository or not token:
+        return None
+    return upload_file(
+        LIVE_STATUS_PATH,
+        repository=repository,
+        token=token,
+        branch=branch,
+        remote_directory="bnc-streamlit-app/data",
+    )
 
 
 def format_points(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
@@ -356,15 +372,24 @@ with data_tab:
     check_col, refresh_col = st.columns(2)
     with check_col:
         check_live = st.button(
-            "Check live scores",
+            "Check live and recent scores",
             type="primary",
             use_container_width=True,
         )
 
     if check_live:
-        with st.spinner("Checking nearby fixtures with the live provider..."):
-            live_statuses, live_errors = fetch_candidate_statuses(data.schedule)
-            save_status_cache(live_statuses, LIVE_STATUS_PATH)
+        with st.spinner("Checking live and recently completed fixtures..."):
+            checked_statuses, live_errors = fetch_candidate_statuses(data.schedule)
+            live_statuses = merge_status_cache(live_statuses, checked_statuses)
+            try:
+                persist_live_statuses(live_statuses)
+            except Exception as exc:
+                live_errors.append(
+                    {
+                        "matchlink": "live_status.json",
+                        "error": f"Scores saved locally; GitHub upload failed: {exc}",
+                    }
+                )
             st.session_state["live_errors"] = live_errors
         st.rerun()
 
@@ -414,10 +439,14 @@ with data_tab:
 
     if live_statuses.empty:
         st.info(
-            "No live check has been saved yet. Click **Check live scores** near kickoff."
+            "No score check has been saved yet. Click "
+            "**Check live and recent scores** to fetch live or final scores."
         )
     elif live_matches.empty:
-        st.info("The provider does not currently report any nearby fixture as live.")
+        st.info(
+            "The provider does not currently report a fixture as live. "
+            "Recently completed final scores are retained below."
+        )
     else:
         st.success(
             f"{len(live_matches)} fixture(s) currently reported live. "
@@ -519,6 +548,18 @@ with data_tab:
                 )
 
             results = process_matches(missing_due, update_progress)
+            checked_statuses, completed_status_errors = fetch_statuses(missing_due)
+            live_statuses = merge_status_cache(live_statuses, checked_statuses)
+            try:
+                persist_live_statuses(live_statuses)
+            except Exception as exc:
+                completed_status_errors.append(
+                    {
+                        "matchlink": "live_status.json",
+                        "error": f"Scores saved locally; GitHub upload failed: {exc}",
+                    }
+                )
+            st.session_state["live_errors"] = completed_status_errors
             repository, token, branch = github_settings()
             uploaded = []
 
@@ -569,7 +610,7 @@ with data_tab:
         if not live_statuses.empty
         else {}
     )
-    visible_fixtures["Live Score"] = visible_fixtures["matchlink"].map(
+    visible_fixtures["Score"] = visible_fixtures["matchlink"].map(
         live_statuses.set_index("matchlink")["Score"].to_dict()
         if not live_statuses.empty and "Score" in live_statuses
         else {}
@@ -584,7 +625,7 @@ with data_tab:
             "Round",
             "Status",
             "Provider Status",
-            "Live Score",
+            "Score",
             "Data",
             "matchlink",
         ]

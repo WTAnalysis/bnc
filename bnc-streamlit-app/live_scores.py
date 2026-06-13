@@ -32,10 +32,10 @@ NON_LIVE_STATUSES = {
 def candidate_matches(
     schedule: pd.DataFrame,
     now: datetime | None = None,
-    before_hours: float = 5,
+    before_hours: float = 30,
     after_hours: float = 2,
 ) -> pd.DataFrame:
-    """Return fixtures close enough to now to warrant a provider status check."""
+    """Return live, upcoming, and recently completed fixtures to check."""
     now = now or datetime.now(timezone.utc)
     return schedule[
         schedule["kickoff"].between(
@@ -94,18 +94,35 @@ def fetch_match_status(match_id: str, timeout: int = 30) -> dict:
     }
 
 
-def fetch_candidate_statuses(schedule: pd.DataFrame) -> tuple[pd.DataFrame, list[dict]]:
+def fetch_statuses(matches: pd.DataFrame) -> tuple[pd.DataFrame, list[dict]]:
     rows = []
     errors = []
-    for row in candidate_matches(schedule).itertuples(index=False):
+    for row in matches.itertuples(index=False):
         match_id = str(row.matchlink).strip()
         try:
             status = fetch_match_status(match_id)
-            status["Kickoff UTC"] = row.kickoff.isoformat()
+            kickoff = getattr(row, "kickoff", None)
+            status["Kickoff UTC"] = kickoff.isoformat() if kickoff is not None else None
             rows.append(status)
         except Exception as exc:
             errors.append({"matchlink": match_id, "error": str(exc)})
     return pd.DataFrame(rows), errors
+
+
+def fetch_candidate_statuses(schedule: pd.DataFrame) -> tuple[pd.DataFrame, list[dict]]:
+    return fetch_statuses(candidate_matches(schedule))
+
+
+def merge_status_cache(
+    existing: pd.DataFrame,
+    updates: pd.DataFrame,
+) -> pd.DataFrame:
+    """Keep previously checked fixtures while replacing refreshed matches."""
+    frames = [frame for frame in (existing, updates) if not frame.empty]
+    if not frames:
+        return pd.DataFrame()
+    merged = pd.concat(frames, ignore_index=True)
+    return merged.drop_duplicates(subset="matchlink", keep="last").reset_index(drop=True)
 
 
 def save_status_cache(statuses: pd.DataFrame, cache_path: Path) -> None:
