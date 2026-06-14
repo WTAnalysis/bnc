@@ -12,6 +12,7 @@ from league_data import (
     due_missing_matches,
     fixture_status,
     ordered_lineup,
+    recent_fixtures,
 )
 from match_batch import process_matches
 from live_scores import (
@@ -111,6 +112,26 @@ def format_points(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
         if column in result:
             result[column] = result[column].astype(float).round(1)
     return result
+
+
+def styled_lineup_table(lineup: pd.DataFrame) -> pd.io.formats.style.Styler:
+    display = lineup[
+        ["Position", "Player", "Country", "Selection", "Player Points"]
+    ].rename(columns={"Player Points": "Points"})
+    display = format_points(display, ["Points"])
+    colours = {
+        "Picked": "#DAF2D0",
+        "Captain": "#F7C7AC",
+        "Vice Captain": "#CAEDFB",
+    }
+
+    def colour_selection(row: pd.Series) -> list[str]:
+        selection = str(row["Selection"])
+        background = "#F2CEEF" if selection.startswith("Sub") else colours.get(selection)
+        style = f"background-color: {background}; color: #111111" if background else ""
+        return [style] * len(row)
+
+    return display.style.apply(colour_selection, axis=1).format({"Points": "{:.1f}"})
 
 
 CHART_COLORS = [
@@ -266,9 +287,8 @@ with stages_tab:
             )
             total = lineup["Lineup Points"].sum()
             st.markdown(f"#### {manager} - {total:.1f} pts")
-            lineup = lineup[["Position", "Player", "Selection", "Player Points"]]
             st.dataframe(
-                format_points(lineup, ["Player Points"]),
+                styled_lineup_table(lineup),
                 hide_index=True,
                 use_container_width=True,
                 height=615,
@@ -306,9 +326,9 @@ with teams_tab:
             (data.lineup_scores["Manager"] == manager)
             & (data.lineup_scores["Stage"] == team_stage)
         ]
-    )[["Position", "Player", "Selection", "Player Points"]]
+    )
     st.dataframe(
-        format_points(team_lineup, ["Player Points"]),
+        styled_lineup_table(team_lineup),
         hide_index=True,
         use_container_width=True,
         height=615,
@@ -628,13 +648,14 @@ with data_tab:
         if not live_matches.empty
         else set()
     )
-    visible_fixtures = fixture_data[
+    eligible_fixtures = fixture_data[
         fixture_data["Round"].isin(stage_filter)
         & (
             fixture_data["Data"].ne("Missing")
             | fixture_data["matchlink"].isin(live_ids)
         )
     ].copy()
+    visible_fixtures = recent_fixtures(eligible_fixtures)
     visible_fixtures["Provider Status"] = visible_fixtures["matchlink"].map(
         live_statuses.set_index("matchlink")["Provider Status"].to_dict()
         if not live_statuses.empty
@@ -673,7 +694,9 @@ with data_tab:
         },
     )
 
-    scored_fixtures = visible_fixtures[visible_fixtures["Data"].ne("Missing")].copy()
+    scored_fixtures = eligible_fixtures[
+        eligible_fixtures["Data"].ne("Missing")
+    ].copy()
     if not scored_fixtures.empty:
         st.subheader("Match player scores")
         scored_fixtures = scored_fixtures.sort_values("kickoff", ascending=False)

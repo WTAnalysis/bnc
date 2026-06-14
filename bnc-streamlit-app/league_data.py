@@ -81,6 +81,7 @@ def load_picked_players(workbook_path: Path) -> pd.DataFrame:
 
 def load_selections(workbook_path: Path, players: pd.DataFrame) -> pd.DataFrame:
     lookup = players.set_index(["Manager", "Player"])["player_id"].to_dict()
+    nation_lookup = players.set_index(["Manager", "Player"])["Nation"].to_dict()
     rows: list[dict] = []
 
     for manager, sheet_name in MANAGER_SHEETS.items():
@@ -99,6 +100,7 @@ def load_selections(workbook_path: Path, players: pd.DataFrame) -> pd.DataFrame:
                         "Stage": stage,
                         "Position": sheet.iat[row_number, 0],
                         "Player": player,
+                        "Country": nation_lookup.get((manager, player), ""),
                         "player_id": lookup.get((manager, player), ""),
                         "Selection": selection,
                         "Multiplier": SELECTION_MULTIPLIERS.get(selection, 0.0),
@@ -177,6 +179,20 @@ def point_file_ids(points_dir: Path) -> set[str]:
         path.name.removesuffix("_playerlog.xlsx").strip()
         for path in points_dir.glob("*_playerlog.xlsx")
     }
+
+
+def recent_fixtures(
+    fixtures: pd.DataFrame,
+    now: datetime | None = None,
+    hours: float = 48,
+) -> pd.DataFrame:
+    """Return fixtures that have kicked off within the requested recent window."""
+    now = now or datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=hours)
+    return fixtures[
+        fixtures["kickoff"].notna()
+        & fixtures["kickoff"].between(cutoff, now)
+    ].copy()
 
 
 def due_missing_matches(
