@@ -9,6 +9,8 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import requests
 
+from config import LIVE_REFRESH_WINDOW_HOURS
+
 
 FEED_URL = (
     "https://api.performfeeds.com/soccerdata/matchevent/"
@@ -41,6 +43,22 @@ def candidate_matches(
         schedule["kickoff"].between(
             now - timedelta(hours=before_hours),
             now + timedelta(hours=after_hours),
+        )
+    ].copy()
+
+
+def refreshable_matches(
+    schedule: pd.DataFrame,
+    now: datetime | None = None,
+    window_hours: float = LIVE_REFRESH_WINDOW_HOURS,
+) -> pd.DataFrame:
+    """Return fixtures eligible for repeated fantasy-point refreshes."""
+    now = now or datetime.now(timezone.utc)
+    return schedule[
+        schedule["kickoff"].notna()
+        & schedule["kickoff"].between(
+            now - timedelta(hours=window_hours),
+            now,
         )
     ].copy()
 

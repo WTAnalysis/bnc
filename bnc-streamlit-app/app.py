@@ -20,6 +20,7 @@ from live_scores import (
     format_england_time,
     load_status_cache,
     merge_status_cache,
+    refreshable_matches,
     save_status_cache,
 )
 from predictions import (
@@ -182,6 +183,7 @@ def stage_comparison_chart_html(stage_totals: pd.DataFrame) -> str:
 
 data = build_league_data(WORKBOOK_PATH, POINTS_DIR)
 live_statuses = load_status_cache(LIVE_STATUS_PATH)
+current_point_matches = refreshable_matches(data.schedule)
 predictions = apply_live_scores(
     load_predictions(WORKBOOK_PATH),
     live_statuses,
@@ -455,13 +457,13 @@ with data_tab:
 
     with refresh_col:
         refresh_live = st.button(
-            "Refresh live fantasy points",
-            disabled=live_matches.empty,
+            "Refresh current fantasy points",
+            disabled=current_point_matches.empty,
             use_container_width=True,
         )
 
     if refresh_live:
-        progress = st.progress(0, text="Refreshing live fantasy points...")
+        progress = st.progress(0, text="Refreshing current fantasy points...")
 
         def update_live_progress(index: int, total: int, match_id: str) -> None:
             progress.progress(
@@ -469,8 +471,23 @@ with data_tab:
                 text=f"Refreshing {index} of {total}: {match_id}",
             )
 
+        checked_statuses, refresh_status_errors = fetch_statuses(
+            current_point_matches
+        )
+        live_statuses = merge_status_cache(live_statuses, checked_statuses)
+        try:
+            persist_live_statuses(live_statuses)
+        except Exception as exc:
+            refresh_status_errors.append(
+                {
+                    "matchlink": "live_status.json",
+                    "error": f"Scores saved locally; GitHub upload failed: {exc}",
+                }
+            )
+        st.session_state["live_errors"] = refresh_status_errors
+
         live_results = process_matches(
-            live_matches[["matchlink"]],
+            current_point_matches[["matchlink"]],
             update_live_progress,
         )
         repository, token, branch = github_settings()
@@ -493,8 +510,8 @@ with data_tab:
     if live_results:
         live_successes = sum(result["success"] for result in live_results)
         st.success(
-            f"Refreshed provisional fantasy points for "
-            f"{live_successes} of {len(live_results)} live match(es)."
+            f"Refreshed current fantasy points for "
+            f"{live_successes} of {len(live_results)} eligible match(es)."
         )
         live_failures = [result for result in live_results if result["error"]]
         if live_failures:
@@ -510,14 +527,27 @@ with data_tab:
             st.dataframe(pd.DataFrame(live_errors), hide_index=True)
 
     st.divider()
-    st.subheader("Update match points")
+    st.subheader("Live fantasy points")
     st.write(
-        "The app processes fixtures after a 2.5-hour completion buffer. "
-        "Existing point files are never recalculated by the batch button."
+        "From kickoff until five hours after kickoff, "
+        "**Refresh current fantasy points** recalculates and overwrites each "
+        "eligible match file. The tables and league standings then rebuild "
+        "from the latest available points."
     )
+    if current_point_matches.empty:
+        st.info("No fixture is currently inside the five-hour refresh window.")
+    else:
+        st.caption(
+            f"{len(current_point_matches)} fixture(s) can currently be refreshed."
+        )
 
+    st.subheader("Catch up missing match points")
+    st.write(
+        "This section catches up older fixtures that still have no point file. "
+        "It does not replace files already created by the live refresh."
+    )
     if missing_due.empty:
-        st.success("All completed fixtures currently have point data.")
+        st.success("All older completed fixtures currently have point data.")
     else:
         due_display = missing_due[
             ["kickoff_uk", "description", "Home_Team", "Away_Team", "Round", "matchlink"]
