@@ -120,28 +120,10 @@
     "Provider Updated UTC": "2026-06-15T17:40:39+00:00",
     "Checked At UTC": "2026-06-15T18:40:13.293028+00:00",
     "Kickoff UTC": "2026-06-15T19:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
-  },
-  {
-    "matchlink": "66cem7lh6o8ckkfxp4tao7o5w",
-    "Fixture": "Spain vs Cabo Verde",
-    "Home": "Spain",
-    "Away": "Cabo Verde",
-    "Home Score": 0.0,
-    "Away Score": 0.0,
-    "Provider Status": "Played",
-    "Is Live": false,
-    "Is Complete": true,
-    "Provider Updated UTC": "2026-06-15T18:04:07+00:00",
-    "Checked At UTC": "2026-06-15T18:40:13.794451+00:00",
-    "Kickoff UTC": "2026-06-15T16:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "-",
+    "Kickoff (England)": "15 Jun 2026, 20:00:00 BST",
+    "Provider updated": "15 Jun 2026, 18:40:39 BST",
+    "App checked": "15 Jun 2026, 19:40:13 BST"
   },
   {
     "matchlink": "4v4v3ge0g7tm1w9uzpoehmzh0",
@@ -156,10 +138,10 @@
     "Provider Updated UTC": "2026-06-15T09:11:24+00:00",
     "Checked At UTC": "2026-06-15T18:40:15.259841+00:00",
     "Kickoff UTC": "2026-06-15T02:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "5-1",
+    "Kickoff (England)": "15 Jun 2026, 03:00:00 BST",
+    "Provider updated": "15 Jun 2026, 10:11:24 BST",
+    "App checked": "15 Jun 2026, 19:40:15 BST"
   },
   {
     "matchlink": "ddupm8zbfndp54r8uru3obf9w",
@@ -174,10 +156,10 @@
     "Provider Updated UTC": "2026-06-15T15:23:27+00:00",
     "Checked At UTC": "2026-06-15T18:40:15.695432+00:00",
     "Kickoff UTC": "2026-06-14T23:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "1-0",
+    "Kickoff (England)": "15 Jun 2026, 00:00:00 BST",
+    "Provider updated": "15 Jun 2026, 16:23:27 BST",
+    "App checked": "15 Jun 2026, 19:40:15 BST"
   },
   {
     "matchlink": "424kyd0drjm51x8dsauowgpp0",
@@ -192,10 +174,10 @@
     "Provider Updated UTC": "2026-06-15T00:49:50+00:00",
     "Checked At UTC": "2026-06-15T18:40:16.235282+00:00",
     "Kickoff UTC": "2026-06-14T20:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "2-2",
+    "Kickoff (England)": "14 Jun 2026, 21:00:00 BST",
+    "Provider updated": "15 Jun 2026, 01:49:50 BST",
+    "App checked": "15 Jun 2026, 19:40:16 BST"
   },
   {
     "matchlink": "cjc09ujyfc1ks4blsyl8hbfv8",
@@ -210,6 +192,24 @@
     "Provider Updated UTC": "2026-06-14T21:25:45+00:00",
     "Checked At UTC": "2026-06-15T18:40:17.770241+00:00",
     "Kickoff UTC": "2026-06-14T17:00:00+00:00",
+    "Score": "7-1",
+    "Kickoff (England)": "14 Jun 2026, 18:00:00 BST",
+    "Provider updated": "14 Jun 2026, 22:25:45 BST",
+    "App checked": "15 Jun 2026, 19:40:17 BST"
+  },
+  {
+    "matchlink": "66cem7lh6o8ckkfxp4tao7o5w",
+    "Fixture": "Spain vs Cabo Verde",
+    "Home": "Spain",
+    "Away": "Cabo Verde",
+    "Home Score": 0.0,
+    "Away Score": 0.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-06-15T18:04:07+00:00",
+    "Checked At UTC": "2026-06-15T18:40:26.462696+00:00",
+    "Kickoff UTC": "2026-06-15T16:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
     "Provider updated": NaN,
