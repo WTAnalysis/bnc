@@ -552,28 +552,10 @@
     "Provider Updated UTC": "2026-06-21T17:45:06+00:00",
     "Checked At UTC": "2026-06-21T18:11:53.888243+00:00",
     "Kickoff UTC": "2026-06-21T19:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
-  },
-  {
-    "matchlink": "8muyl6d5ahy04fbwarplcg3kk",
-    "Fixture": "Spain vs Saudi Arabia",
-    "Home": "Spain",
-    "Away": "Saudi Arabia",
-    "Home Score": 4.0,
-    "Away Score": 0.0,
-    "Provider Status": "Played",
-    "Is Live": false,
-    "Is Complete": true,
-    "Provider Updated UTC": "2026-06-21T18:06:44+00:00",
-    "Checked At UTC": "2026-06-21T18:11:54.286958+00:00",
-    "Kickoff UTC": "2026-06-21T16:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "-",
+    "Kickoff (England)": "21 Jun 2026, 20:00:00 BST",
+    "Provider updated": "21 Jun 2026, 18:45:06 BST",
+    "App checked": "21 Jun 2026, 19:11:53 BST"
   },
   {
     "matchlink": "6c7t9tr9b24qfjwphblk6776c",
@@ -588,10 +570,10 @@
     "Provider Updated UTC": "2026-06-21T09:04:41+00:00",
     "Checked At UTC": "2026-06-21T18:11:54.866685+00:00",
     "Kickoff UTC": "2026-06-21T04:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "0-4",
+    "Kickoff (England)": "21 Jun 2026, 05:00:00 BST",
+    "Provider updated": "21 Jun 2026, 10:04:41 BST",
+    "App checked": "21 Jun 2026, 19:11:54 BST"
   },
   {
     "matchlink": "9erlmm2s3kapioujs9clvcic",
@@ -606,10 +588,10 @@
     "Provider Updated UTC": "2026-06-21T04:43:17+00:00",
     "Checked At UTC": "2026-06-21T18:11:55.427270+00:00",
     "Kickoff UTC": "2026-06-21T00:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "0-0",
+    "Kickoff (England)": "21 Jun 2026, 01:00:00 BST",
+    "Provider updated": "21 Jun 2026, 05:43:17 BST",
+    "App checked": "21 Jun 2026, 19:11:55 BST"
   },
   {
     "matchlink": "ecp6v27q48jj6um9odhcahjbo",
@@ -624,10 +606,10 @@
     "Provider Updated UTC": "2026-06-21T00:26:30+00:00",
     "Checked At UTC": "2026-06-21T18:11:55.826380+00:00",
     "Kickoff UTC": "2026-06-20T20:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "2-1",
+    "Kickoff (England)": "20 Jun 2026, 21:00:00 BST",
+    "Provider updated": "21 Jun 2026, 01:26:30 BST",
+    "App checked": "21 Jun 2026, 19:11:55 BST"
   },
   {
     "matchlink": "5nh4gmpiskmsjcy904osi5n2s",
@@ -642,6 +624,24 @@
     "Provider Updated UTC": "2026-06-20T21:17:10+00:00",
     "Checked At UTC": "2026-06-21T18:11:56.272104+00:00",
     "Kickoff UTC": "2026-06-20T17:00:00+00:00",
+    "Score": "5-1",
+    "Kickoff (England)": "20 Jun 2026, 18:00:00 BST",
+    "Provider updated": "20 Jun 2026, 22:17:10 BST",
+    "App checked": "21 Jun 2026, 19:11:56 BST"
+  },
+  {
+    "matchlink": "8muyl6d5ahy04fbwarplcg3kk",
+    "Fixture": "Spain vs Saudi Arabia",
+    "Home": "Spain",
+    "Away": "Saudi Arabia",
+    "Home Score": 4.0,
+    "Away Score": 0.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-06-21T18:06:44+00:00",
+    "Checked At UTC": "2026-06-21T18:12:03.076909+00:00",
+    "Kickoff UTC": "2026-06-21T16:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
     "Provider updated": NaN,
