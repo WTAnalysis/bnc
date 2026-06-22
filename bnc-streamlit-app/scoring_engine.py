@@ -2003,7 +2003,7 @@ def process_match(
             is_attempt_saved |
             event_counts['typeId'].isin(['Post', 'Miss'])
         ) &
-        event_counts['penalty'].eq(1)
+        event_counts['penaltyshot'].eq(1)
     ).astype(int)
     event_counts['Penalty Saved'] = (
         event_counts['typeId'].eq('Save') & event_counts['penaltyshot'].eq(1)
