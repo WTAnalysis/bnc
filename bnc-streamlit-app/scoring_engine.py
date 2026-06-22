@@ -1958,7 +1958,7 @@ def process_match(
     event_counts = event_counts[event_counts['playerName'].notna()].copy()
     event_counts['playerName'] = event_counts['playerName'].astype(str).str.strip()
 
-    for col in ['assist', 'keyPass', 'yellowcard', 'yellowcard2', 'redcard', 'penalty']:
+    for col in ['assist', 'keyPass', 'yellowcard', 'yellowcard2', 'redcard', 'penaltyshot']:
         if col not in event_counts.columns:
             event_counts[col] = 0
         else:
@@ -1996,7 +1996,7 @@ def process_match(
     ).astype(int)
     event_counts['Own Goal'] = event_counts['typeId'].eq('Own Goal').astype(int)
     event_counts['Penalty Scored'] = (
-        event_counts['typeId'].eq('Goal') & event_counts['penalty'].eq(1)
+        event_counts['typeId'].eq('Goal') & event_counts['penaltyshot'].eq(1)
     ).astype(int)
     event_counts['Penalty Missed'] = (
         (
@@ -2006,7 +2006,7 @@ def process_match(
         event_counts['penalty'].eq(1)
     ).astype(int)
     event_counts['Penalty Saved'] = (
-        event_counts['typeId'].eq('Save') & event_counts['penalty'].eq(1)
+        event_counts['typeId'].eq('Save') & event_counts['penaltyshot'].eq(1)
     ).astype(int)
 
     player_event_counts = (
