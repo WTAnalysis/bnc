@@ -23,6 +23,7 @@ class LeagueData:
     player_stage_points: pd.DataFrame
     lineup_scores: pd.DataFrame
     stage_totals: pd.DataFrame
+    draft_round_scores: pd.DataFrame
     league_table: pd.DataFrame
 
 
@@ -130,6 +131,53 @@ def load_point_files(points_dir: Path, schedule: pd.DataFrame) -> pd.DataFrame:
     return pd.concat(frames, ignore_index=True)
 
 
+def build_draft_round_scores(
+    players: pd.DataFrame,
+    stage_points: pd.DataFrame,
+) -> pd.DataFrame:
+    base_columns = [
+        "Round",
+        "Pick",
+        "Manager",
+        "Player",
+        "Nation",
+        "Position",
+        "player_id",
+    ]
+    draft = players[base_columns].copy()
+    draft = draft[
+        draft["Manager"].astype(str).str.strip().str.lower().ne("nan")
+        & draft["Player"].astype(str).str.strip().str.lower().ne("nan")
+        & draft["player_id"].astype(str).str.strip().str.lower().ne("nan")
+        & draft["player_id"].astype(str).str.strip().ne("")
+    ].copy()
+    draft["Round"] = pd.to_numeric(draft["Round"], errors="coerce").astype("Int64")
+    draft["Pick"] = pd.to_numeric(draft["Pick"], errors="coerce").astype("Int64")
+
+    stage_pivot = (
+        stage_points.pivot_table(
+            index="player_id",
+            columns="Stage",
+            values="Player Points",
+            aggfunc="sum",
+        )
+        .reindex(columns=STAGES)
+        .fillna(0.0)
+    )
+    draft = draft.merge(stage_pivot, on="player_id", how="left")
+    for stage in STAGES:
+        draft[stage] = draft[stage].fillna(0.0)
+
+    draft["Total"] = draft[STAGES].sum(axis=1)
+    draft = draft.sort_values(
+        ["Round", "Total", "Pick", "Player"],
+        ascending=[True, False, False, True],
+    ).reset_index(drop=True)
+    draft["Draft Rank"] = draft.groupby("Round").cumcount() + 1
+    draft["Bonus"] = draft["Draft Rank"].eq(1).astype(int) * 3
+    return draft
+
+
 def build_league_data(workbook_path: Path, points_dir: Path) -> LeagueData:
     schedule = load_schedule(workbook_path)
     players = load_picked_players(workbook_path)
@@ -154,12 +202,24 @@ def build_league_data(workbook_path: Path, points_dir: Path) -> LeagueData:
     totals["Stage"] = pd.Categorical(totals["Stage"], categories=STAGES, ordered=True)
     totals = totals.sort_values(["Stage", "Points", "Manager"], ascending=[True, False, True])
 
-    league = (
+    draft_round_scores = build_draft_round_scores(players, stage_points)
+    draft_bonus = (
+        draft_round_scores[draft_round_scores["Draft Rank"] == 1]
+        .groupby("Manager", as_index=False)["Bonus"]
+        .sum()
+    )
+
+    fantasy_totals = (
         totals.groupby("Manager", as_index=False)["Points"]
         .sum()
-        .sort_values(["Points", "Manager"], ascending=[False, True])
-        .reset_index(drop=True)
     )
+    league = fantasy_totals.merge(draft_bonus, on="Manager", how="left")
+    league["Bonus"] = league["Bonus"].fillna(0).astype(int)
+    league["Total"] = league["Points"] + league["Bonus"]
+    league = league.sort_values(
+        ["Total", "Points", "Manager"],
+        ascending=[False, False, True],
+    ).reset_index(drop=True)
     league.insert(0, "Rank", range(1, len(league) + 1))
 
     return LeagueData(
@@ -170,6 +230,7 @@ def build_league_data(workbook_path: Path, points_dir: Path) -> LeagueData:
         player_stage_points=stage_points,
         lineup_scores=lineup,
         stage_totals=totals,
+        draft_round_scores=draft_round_scores,
         league_table=league,
     )
 

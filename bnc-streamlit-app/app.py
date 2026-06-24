@@ -143,6 +143,7 @@ CHART_COLORS = [
     "#E76F51",
     "#577590",
     "#8E6C88",
+    "#B56576",
 ]
 
 
@@ -224,12 +225,12 @@ st.markdown(
 metric_1, metric_2, metric_3, metric_4 = st.columns(4)
 leader = data.league_table.iloc[0] if not data.league_table.empty else None
 metric_1.metric("Current leader", leader["Manager"] if leader is not None else "No scores")
-metric_2.metric("Leader points", f"{leader['Points']:.1f}" if leader is not None else "0.0")
+metric_2.metric("Leader points", f"{leader['Total']:.1f}" if leader is not None else "0.0")
 metric_3.metric("Matches scored", f"{ready_count} / {len(data.schedule)}")
 metric_4.metric("Ready to process", len(missing_due))
 
-overview_tab, stages_tab, teams_tab, predictions_tab, data_tab = st.tabs(
-    ["League", "Stages", "Teams", "Predictions", "Match data"]
+overview_tab, stages_tab, teams_tab, draft_tab, predictions_tab, data_tab = st.tabs(
+    ["League", "Stages", "Teams", "Draft Rounds", "Predictions", "Match data"]
 )
 
 with overview_tab:
@@ -239,9 +240,13 @@ with overview_tab:
         .fillna(0)
     )
     stage_pivot.columns = [STAGE_LABELS[column] for column in stage_pivot.columns]
+    bonus_lookup = data.league_table.set_index("Manager")["Bonus"].to_dict()
+    stage_pivot["Bonus"] = stage_pivot.index.map(bonus_lookup).fillna(0)
     stage_pivot["Total"] = stage_pivot.sum(axis=1)
     stage_pivot = stage_pivot.sort_values("Total", ascending=False)
-    stage_columns = [column for column in stage_pivot.columns if column != "Total"]
+    stage_columns = ["Bonus"] + [
+        column for column in stage_pivot.columns if column not in {"Total", "Bonus"}
+    ]
     stage_pivot = stage_pivot[["Total"] + stage_columns]
 
     st.subheader("League Table")
@@ -297,7 +302,7 @@ with stages_tab:
 with teams_tab:
     manager = st.selectbox("Manager", list(data.league_table["Manager"]))
     manager_total = float(
-        data.league_table.loc[data.league_table["Manager"] == manager, "Points"].iloc[0]
+        data.league_table.loc[data.league_table["Manager"] == manager, "Total"].iloc[0]
     )
     st.metric(f"{manager}'s total", f"{manager_total:.1f}")
 
@@ -332,6 +337,28 @@ with teams_tab:
         hide_index=True,
         use_container_width=True,
         height=615,
+    )
+
+with draft_tab:
+    st.subheader("Draft Round Winners")
+    st.caption("Draft round winners receive 3 bonus points. Ties are broken by the highest Pick number.")
+    top_draft_players = data.draft_round_scores[
+        data.draft_round_scores["Draft Rank"] <= 3
+    ].copy()
+    top_draft_players = top_draft_players.rename(
+        columns={"Nation": "Country", "Draft Rank": "Rank"}
+    )
+    display_columns = ["Round", "Rank", "Pick", "Player", "Country", "Manager", "Total"]
+    st.dataframe(
+        format_points(top_draft_players[display_columns], ["Total"]),
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Round": st.column_config.NumberColumn(format="%d"),
+            "Rank": st.column_config.NumberColumn(format="%d"),
+            "Pick": st.column_config.NumberColumn(format="%d"),
+            "Total": st.column_config.NumberColumn(format="%.1f"),
+        },
     )
 
 with predictions_tab:
