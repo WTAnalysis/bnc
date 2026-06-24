@@ -252,24 +252,6 @@
     "App checked": "17 Jun 2026, 07:43:15 BST"
   },
   {
-    "matchlink": "cqsflhc7vaul90l2d4ipzzzmc",
-    "Fixture": "France vs Senegal",
-    "Home": "France",
-    "Away": "Senegal",
-    "Home Score": 3.0,
-    "Away Score": 1.0,
-    "Provider Status": "Played",
-    "Is Live": false,
-    "Is Complete": true,
-    "Provider Updated UTC": "2026-06-17T00:02:39+00:00",
-    "Checked At UTC": "2026-06-17T21:18:43.432134+00:00",
-    "Kickoff UTC": "2026-06-16T19:00:00+00:00",
-    "Score": "3-1",
-    "Kickoff (England)": "16 Jun 2026, 20:00:00 BST",
-    "Provider updated": "17 Jun 2026, 01:02:39 BST",
-    "App checked": "17 Jun 2026, 22:18:43 BST"
-  },
-  {
     "matchlink": "55108ze2r7d8dgkmcauepuhp0",
     "Fixture": "Argentina vs Algeria",
     "Home": "Argentina",
@@ -684,24 +666,6 @@
     "App checked": "23 Jun 2026, 06:45:10 BST"
   },
   {
-    "matchlink": "elv88zog1n9ratzzksyfumtw",
-    "Fixture": "Norway vs Senegal",
-    "Home": "Norway",
-    "Away": "Senegal",
-    "Home Score": 3.0,
-    "Away Score": 2.0,
-    "Provider Status": "Played",
-    "Is Live": false,
-    "Is Complete": true,
-    "Provider Updated UTC": "2026-06-23T04:32:01+00:00",
-    "Checked At UTC": "2026-06-23T12:54:43.134373+00:00",
-    "Kickoff UTC": "2026-06-23T00:00:00+00:00",
-    "Score": "3-2",
-    "Kickoff (England)": "23 Jun 2026, 01:00:00 BST",
-    "Provider updated": "23 Jun 2026, 05:32:01 BST",
-    "App checked": "23 Jun 2026, 13:54:43 BST"
-  },
-  {
     "matchlink": "emsvcmkqvohy5qmhedopxtus4",
     "Fixture": "France vs Iraq",
     "Home": "France",
@@ -768,10 +732,10 @@
     "Provider Updated UTC": "2026-06-24T05:52:10+00:00",
     "Checked At UTC": "2026-06-24T16:00:07.599265+00:00",
     "Kickoff UTC": "2026-06-24T02:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "1-0",
+    "Kickoff (England)": "24 Jun 2026, 03:00:00 BST",
+    "Provider updated": "24 Jun 2026, 06:52:10 BST",
+    "App checked": "24 Jun 2026, 17:00:07 BST"
   },
   {
     "matchlink": "2ypodyawtamo2zzadwm42g9hw",
@@ -786,10 +750,10 @@
     "Provider Updated UTC": "2026-06-24T03:58:17+00:00",
     "Checked At UTC": "2026-06-24T16:00:08.295822+00:00",
     "Kickoff UTC": "2026-06-23T23:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "0-1",
+    "Kickoff (England)": "24 Jun 2026, 00:00:00 BST",
+    "Provider updated": "24 Jun 2026, 04:58:17 BST",
+    "App checked": "24 Jun 2026, 17:00:08 BST"
   },
   {
     "matchlink": "28702hpanr32no1vpxmxhbok4",
@@ -804,10 +768,10 @@
     "Provider Updated UTC": "2026-06-24T00:48:03+00:00",
     "Checked At UTC": "2026-06-24T16:00:09.010550+00:00",
     "Kickoff UTC": "2026-06-23T20:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "0-0",
+    "Kickoff (England)": "23 Jun 2026, 21:00:00 BST",
+    "Provider updated": "24 Jun 2026, 01:48:03 BST",
+    "App checked": "24 Jun 2026, 17:00:09 BST"
   },
   {
     "matchlink": "bwetcq2x65uyp68uztwcuw9hw",
@@ -822,6 +786,42 @@
     "Provider Updated UTC": "2026-06-23T21:59:06+00:00",
     "Checked At UTC": "2026-06-24T16:00:09.910702+00:00",
     "Kickoff UTC": "2026-06-23T17:00:00+00:00",
+    "Score": "5-0",
+    "Kickoff (England)": "23 Jun 2026, 18:00:00 BST",
+    "Provider updated": "23 Jun 2026, 22:59:06 BST",
+    "App checked": "24 Jun 2026, 17:00:09 BST"
+  },
+  {
+    "matchlink": "cqsflhc7vaul90l2d4ipzzzmc",
+    "Fixture": "France vs Senegal",
+    "Home": "France",
+    "Away": "Senegal",
+    "Home Score": 3.0,
+    "Away Score": 1.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-06-17T00:02:39+00:00",
+    "Checked At UTC": "2026-06-24T16:00:26.924287+00:00",
+    "Kickoff UTC": "2026-06-16T19:00:00+00:00",
+    "Score": NaN,
+    "Kickoff (England)": NaN,
+    "Provider updated": NaN,
+    "App checked": NaN
+  },
+  {
+    "matchlink": "elv88zog1n9ratzzksyfumtw",
+    "Fixture": "Norway vs Senegal",
+    "Home": "Norway",
+    "Away": "Senegal",
+    "Home Score": 3.0,
+    "Away Score": 2.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-06-23T04:32:01+00:00",
+    "Checked At UTC": "2026-06-24T16:00:28.189091+00:00",
+    "Kickoff UTC": "2026-06-23T00:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
     "Provider updated": NaN,
