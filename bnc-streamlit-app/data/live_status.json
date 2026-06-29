@@ -1258,5 +1258,23 @@
     "Kickoff (England)": NaN,
     "Provider updated": NaN,
     "App checked": NaN
+  },
+  {
+    "matchlink": "5m9cv89dxqg33qbdgfynvc6c4",
+    "Fixture": "South Africa vs Canada",
+    "Home": "South Africa",
+    "Away": "Canada",
+    "Home Score": 0.0,
+    "Away Score": 1.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-06-29T00:42:55+00:00",
+    "Checked At UTC": "2026-06-29T08:52:22.885732+00:00",
+    "Kickoff UTC": "2026-06-28T19:00:00+00:00",
+    "Score": NaN,
+    "Kickoff (England)": NaN,
+    "Provider updated": NaN,
+    "App checked": NaN
   }
 ]
