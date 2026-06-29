@@ -87,7 +87,7 @@ def load_selections(workbook_path: Path, players: pd.DataFrame) -> pd.DataFrame:
 
     for manager, sheet_name in MANAGER_SHEETS.items():
         sheet = pd.read_excel(workbook_path, sheet_name=sheet_name, header=None)
-        for row_number in range(2, min(18, len(sheet))):
+        for row_number in range(2, len(sheet)):
             player = str(sheet.iat[row_number, 1]).strip()
             if not player or player == "nan":
                 continue

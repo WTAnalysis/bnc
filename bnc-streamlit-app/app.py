@@ -134,6 +134,21 @@ def styled_lineup_table(lineup: pd.DataFrame) -> pd.io.formats.style.Styler:
     return display.style.apply(colour_selection, axis=1).format({"Points": "{:.1f}"})
 
 
+def first_available_round(
+    options: list[str],
+    preferred_labels: list[str],
+    fallback: str | None = None,
+) -> str | list[str]:
+    normalized = {str(option).strip().casefold(): option for option in options}
+    for label in preferred_labels:
+        match = normalized.get(label.strip().casefold())
+        if match is not None:
+            return match
+    if fallback is not None:
+        return fallback
+    return options
+
+
 CHART_COLORS = [
     "#0B6E4F",
     "#2A9D8F",
@@ -264,6 +279,7 @@ with stages_tab:
     selected_stage = st.selectbox(
         "Stage",
         STAGES,
+        index=STAGES.index("Last 32"),
         format_func=lambda value: STAGE_LABELS[value],
     )
     stage_totals = data.stage_totals[data.stage_totals["Stage"] == selected_stage].copy()
@@ -323,6 +339,7 @@ with teams_tab:
     team_stage = st.selectbox(
         "Lineup stage",
         STAGES,
+        index=STAGES.index("Last 32"),
         format_func=lambda value: STAGE_LABELS[value],
         key="team_stage",
     )
@@ -393,10 +410,15 @@ with predictions_tab:
     prediction_rounds = [
         value for value in predictions["Round"].dropna().astype(str).unique()
     ]
+    default_prediction_round = first_available_round(
+        prediction_rounds,
+        ["R32", "R2", "Last 32"],
+        fallback=prediction_rounds,
+    )
     selected_prediction_rounds = st.multiselect(
         "Filter prediction rounds",
         prediction_rounds,
-        default=prediction_rounds,
+        default=default_prediction_round,
     )
     prediction_display = prediction_fixture_table(
         predictions[predictions["Round"].astype(str).isin(selected_prediction_rounds)]
@@ -669,7 +691,7 @@ with data_tab:
             st.dataframe(pd.DataFrame(failures)[["match_id", "error"]], hide_index=True)
 
     st.subheader("Fixture data status")
-    stage_filter = st.multiselect("Filter stages", STAGES, default=STAGES)
+    stage_filter = st.multiselect("Filter stages", STAGES, default=["Last 32"])
     live_ids = (
         set(live_matches["matchlink"].astype(str))
         if not live_matches.empty
