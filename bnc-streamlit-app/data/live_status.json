@@ -1164,10 +1164,10 @@
     "Provider Updated UTC": "2026-06-28T06:48:22+00:00",
     "Checked At UTC": "2026-06-28T13:21:31.045814+00:00",
     "Kickoff UTC": "2026-06-28T02:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "3-3",
+    "Kickoff (England)": "28 Jun 2026, 03:00:00 BST",
+    "Provider updated": "28 Jun 2026, 07:48:22 BST",
+    "App checked": "28 Jun 2026, 14:21:31 BST"
   },
   {
     "matchlink": "8g2qr1sd0kqxtjcvybdfgzvh0",
@@ -1182,10 +1182,10 @@
     "Provider Updated UTC": "2026-06-28T06:20:17+00:00",
     "Checked At UTC": "2026-06-28T13:21:31.279248+00:00",
     "Kickoff UTC": "2026-06-28T02:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "1-3",
+    "Kickoff (England)": "28 Jun 2026, 03:00:00 BST",
+    "Provider updated": "28 Jun 2026, 07:20:17 BST",
+    "App checked": "28 Jun 2026, 14:21:31 BST"
   },
   {
     "matchlink": "emz36epmepynr3ggfksojdmhg",
@@ -1200,10 +1200,10 @@
     "Provider Updated UTC": "2026-06-28T04:31:27+00:00",
     "Checked At UTC": "2026-06-28T13:21:31.722834+00:00",
     "Kickoff UTC": "2026-06-27T23:30:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "3-1",
+    "Kickoff (England)": "28 Jun 2026, 00:30:00 BST",
+    "Provider updated": "28 Jun 2026, 05:31:27 BST",
+    "App checked": "28 Jun 2026, 14:21:31 BST"
   },
   {
     "matchlink": "dsi0ga8gcy8xcrywdfj3i51qs",
@@ -1218,10 +1218,10 @@
     "Provider Updated UTC": "2026-06-28T04:48:47+00:00",
     "Checked At UTC": "2026-06-28T13:21:32.332730+00:00",
     "Kickoff UTC": "2026-06-27T23:30:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "0-0",
+    "Kickoff (England)": "28 Jun 2026, 00:30:00 BST",
+    "Provider updated": "28 Jun 2026, 05:48:47 BST",
+    "App checked": "28 Jun 2026, 14:21:32 BST"
   },
   {
     "matchlink": "4n1jg6og0392ta1ncdefsn2tw",
@@ -1236,10 +1236,10 @@
     "Provider Updated UTC": "2026-06-28T01:30:19+00:00",
     "Checked At UTC": "2026-06-28T13:21:32.799176+00:00",
     "Kickoff UTC": "2026-06-27T21:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "2-1",
+    "Kickoff (England)": "27 Jun 2026, 22:00:00 BST",
+    "Provider updated": "28 Jun 2026, 02:30:19 BST",
+    "App checked": "28 Jun 2026, 14:21:32 BST"
   },
   {
     "matchlink": "3t13xxgisfsmlvm62iydvpqms",
@@ -1254,10 +1254,10 @@
     "Provider Updated UTC": "2026-06-28T01:41:54+00:00",
     "Checked At UTC": "2026-06-28T13:21:33.288074+00:00",
     "Kickoff UTC": "2026-06-27T21:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN
+    "Score": "0-2",
+    "Kickoff (England)": "27 Jun 2026, 22:00:00 BST",
+    "Provider updated": "28 Jun 2026, 02:41:54 BST",
+    "App checked": "28 Jun 2026, 14:21:33 BST"
   },
   {
     "matchlink": "5m9cv89dxqg33qbdgfynvc6c4",
@@ -1270,7 +1270,7 @@
     "Is Live": false,
     "Is Complete": true,
     "Provider Updated UTC": "2026-06-29T00:42:55+00:00",
-    "Checked At UTC": "2026-06-29T08:52:22.885732+00:00",
+    "Checked At UTC": "2026-06-29T08:52:47.844479+00:00",
     "Kickoff UTC": "2026-06-28T19:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
