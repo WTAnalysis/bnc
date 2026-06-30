@@ -2030,7 +2030,7 @@ def process_match(
         'Penalty Saved'
     ]
 
-    event_counts = df[regulation_mask].copy()
+    event_counts = df[regulation_period_mask(df['periodId'])].copy()
     event_counts = event_counts[event_counts['playerName'].notna()].copy()
     event_counts['playerName'] = event_counts['playerName'].astype(str).str.strip()
 
