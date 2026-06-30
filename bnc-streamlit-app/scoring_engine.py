@@ -6,6 +6,78 @@ and removal of unused plotting imports.
 """
 
 from pathlib import Path
+import pandas as pd
+
+
+REGULATION_PERIODS = {1, 2, 3, 4}
+SHOOTOUT_PERIOD = 5
+
+
+def regulation_period_mask(periods: pd.Series) -> pd.Series:
+    return pd.to_numeric(periods, errors='coerce').isin(REGULATION_PERIODS)
+
+
+def calculate_shootout_scores(events: pd.DataFrame) -> pd.DataFrame:
+    """Return per-player shootout points from period 5 events only."""
+    if events.empty:
+        return pd.DataFrame(columns=['playerName', 'Shootout'])
+
+    shootout_events = events.copy()
+    shootout_events = shootout_events[
+        pd.to_numeric(shootout_events.get('periodId'), errors='coerce').eq(SHOOTOUT_PERIOD)
+    ].copy()
+    if shootout_events.empty:
+        return pd.DataFrame(columns=['playerName', 'Shootout'])
+
+    shootout_events = shootout_events[shootout_events['typeId'] != 'goal_conceded'].copy()
+    shootout_events = shootout_events.reset_index(drop=True)
+    shootout_events['playerName'] = (
+        shootout_events['playerName'].astype(str).str.strip()
+    )
+    shootout_events = shootout_events[
+        shootout_events['playerName'].ne('')
+        & shootout_events['playerName'].str.lower().ne('nan')
+    ].copy()
+    if shootout_events.empty:
+        return pd.DataFrame(columns=['playerName', 'Shootout'])
+
+    shot_points = {
+        'Goal': 1,
+        'Attempt Saved': -3,
+        'Attempted Saved': -3,
+        'Miss': -3,
+        'Post': -3,
+    }
+    shooter_scores = shootout_events[
+        shootout_events['typeId'].isin(shot_points)
+    ][['playerName', 'typeId']].copy()
+    shooter_scores['Shootout'] = shooter_scores['typeId'].map(shot_points).astype(int)
+    shooter_scores = shooter_scores[['playerName', 'Shootout']]
+
+    goalkeeper_rows: list[dict] = []
+    for idx, row in shootout_events.iterrows():
+        if row['typeId'] != 'Penalty faced':
+            continue
+        previous_type = shootout_events.iloc[idx - 1]['typeId'] if idx > 0 else None
+        if previous_type == 'Goal':
+            shootout_value = -1
+        elif previous_type in {'Attempt Saved', 'Attempted Saved'}:
+            shootout_value = 3
+        else:
+            shootout_value = 0
+        goalkeeper_rows.append(
+            {'playerName': row['playerName'], 'Shootout': shootout_value}
+        )
+
+    goalkeeper_scores = pd.DataFrame(goalkeeper_rows)
+    combined = pd.concat(
+        [shooter_scores, goalkeeper_scores],
+        ignore_index=True,
+    )
+    if combined.empty:
+        return pd.DataFrame(columns=['playerName', 'Shootout'])
+
+    return combined.groupby('playerName', as_index=False)['Shootout'].sum()
 
 
 def process_match(
@@ -1322,8 +1394,13 @@ def process_match(
     starting_lineups['time_on'] = pd.to_numeric(starting_lineups['time_on'])
     starting_lineups['time_off'] = pd.to_numeric(starting_lineups['time_off'])
 
-    # Step 1: Add goal event info from df
-    goal_events = df[df['typeId'].isin(['Goal', 'Own Goal'])].copy()
+    shootout_scores = calculate_shootout_scores(df)
+    regulation_mask = regulation_period_mask(df['periodId'])
+
+    # Step 1: Add goal event info from regulation and extra-time periods only
+    goal_events = df[
+        regulation_mask & df['typeId'].isin(['Goal', 'Own Goal'])
+    ].copy()
     goal_events['minute'] = pd.to_numeric(goal_events['timeMin'], errors='coerce')
 
     # Step 2: Identify the two team names in the match
@@ -1953,12 +2030,11 @@ def process_match(
         'Penalty Saved'
     ]
 
-    event_period = pd.to_numeric(df['periodId'], errors='coerce')
-    event_counts = df[event_period.isin([1, 2, 3, 4])].copy()
+    event_counts = df[regulation_mask].copy()
     event_counts = event_counts[event_counts['playerName'].notna()].copy()
     event_counts['playerName'] = event_counts['playerName'].astype(str).str.strip()
 
-    for col in ['assist', 'keyPass', 'yellowcard', 'yellowcard2', 'redcard', 'penaltyshot']:
+    for col in ['assist', 'keyPass', 'yellowcard', 'yellowcard2', 'redcard', 'penalty']:
         if col not in event_counts.columns:
             event_counts[col] = 0
         else:
@@ -1996,17 +2072,17 @@ def process_match(
     ).astype(int)
     event_counts['Own Goal'] = event_counts['typeId'].eq('Own Goal').astype(int)
     event_counts['Penalty Scored'] = (
-        event_counts['typeId'].eq('Goal') & event_counts['penaltyshot'].eq(1)
+        event_counts['typeId'].eq('Goal') & event_counts['penalty'].eq(1)
     ).astype(int)
     event_counts['Penalty Missed'] = (
         (
             is_attempt_saved |
             event_counts['typeId'].isin(['Post', 'Miss'])
         ) &
-        event_counts['penaltyshot'].eq(1)
+        event_counts['penalty'].eq(1)
     ).astype(int)
     event_counts['Penalty Saved'] = (
-        event_counts['typeId'].eq('Save') & event_counts['penaltyshot'].eq(1)
+        event_counts['typeId'].eq('Save') & event_counts['penalty'].eq(1)
     ).astype(int)
 
     player_event_counts = (
@@ -2024,6 +2100,16 @@ def process_match(
             .fillna(0)
             .astype(int)
         )
+
+    shootout_scores = shootout_scores.copy()
+    if not shootout_scores.empty:
+        shootout_scores['playerName'] = shootout_scores['playerName'].astype(str).str.strip()
+        shootout_lookup = shootout_scores.set_index('playerName')['Shootout']
+        starting_lineups['Shootout'] = (
+            starting_lineups['player_name'].astype(str).str.strip().map(shootout_lookup).fillna(0).astype(int)
+        )
+    else:
+        starting_lineups['Shootout'] = 0
 
 
     playerlist = pd.read_excel(playerlist_path)
@@ -2166,9 +2252,12 @@ def process_match(
         return score
 
 
-    starting_lineups['Total Score'] = starting_lineups.apply(
+    starting_lineups['Match Score'] = starting_lineups.apply(
         calculate_fantasy_score,
         axis=1
+    )
+    starting_lineups['Total Score'] = (
+        starting_lineups['Match Score'] + starting_lineups['Shootout']
     )
 
     output_dir = Path(output_dir)
