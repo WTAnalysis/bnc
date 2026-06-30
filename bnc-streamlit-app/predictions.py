@@ -78,8 +78,8 @@ def apply_live_scores(
         return result
 
     for status in live_statuses.to_dict(orient="records"):
-        home_score = status.get("Home Score")
-        away_score = status.get("Away Score")
+        home_score = status.get("Prediction Home Score", status.get("Home Score"))
+        away_score = status.get("Prediction Away Score", status.get("Away Score"))
         if pd.isna(home_score) or pd.isna(away_score):
             continue
         match_id = str(status.get("matchlink", "")).strip()

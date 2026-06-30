@@ -87,6 +87,7 @@ def fetch_match_status(match_id: str, timeout: int = 30) -> dict:
     )
     scores = details.get("scores", {})
     current_score = scores.get("total") or scores.get("ft") or scores.get("ht") or {}
+    prediction_score = scores.get("ft") or current_score
     status = details.get("matchStatus", "Unknown")
     provider_updated = pd.to_datetime(
         match_info.get("lastUpdated"),
@@ -102,6 +103,8 @@ def fetch_match_status(match_id: str, timeout: int = 30) -> dict:
         "Away": away,
         "Home Score": current_score.get("home"),
         "Away Score": current_score.get("away"),
+        "Prediction Home Score": prediction_score.get("home"),
+        "Prediction Away Score": prediction_score.get("away"),
         "Provider Status": status,
         "Is Live": status not in NON_LIVE_STATUSES and status != "Unknown",
         "Is Complete": status == "Played",
