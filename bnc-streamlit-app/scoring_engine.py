@@ -11,10 +11,18 @@ import pandas as pd
 
 REGULATION_PERIODS = {1, 2, 3, 4}
 SHOOTOUT_PERIOD = 5
+EXCLUDED_EVENT_IDS = {2945964721.0}
 
 
 def regulation_period_mask(periods: pd.Series) -> pd.Series:
     return pd.to_numeric(periods, errors='coerce').isin(REGULATION_PERIODS)
+
+
+def exclude_invalid_events(events: pd.DataFrame) -> pd.DataFrame:
+    if events.empty or 'id' not in events.columns:
+        return events
+    event_ids = pd.to_numeric(events['id'], errors='coerce')
+    return events.loc[~event_ids.isin(EXCLUDED_EVENT_IDS)].copy()
 
 
 def calculate_shootout_scores(events: pd.DataFrame) -> pd.DataFrame:
@@ -141,7 +149,7 @@ def process_match(
         return pd.Series()  # Return an empty series if there are no qualifiers
     qualifiers_expanded = events_expanded['qualifier'].apply(expand_qualifiers)
     events_expanded = events_expanded.drop(columns=['qualifier']).join(qualifiers_expanded)
-    df = events_expanded
+    df = exclude_invalid_events(events_expanded)
     file_path = formation_dict_path
     formation_dict = pd.read_excel(file_path)
 
