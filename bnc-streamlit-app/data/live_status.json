@@ -1520,26 +1520,6 @@
     "Prediction Away Score": 1.0
   },
   {
-    "matchlink": "7hnbukswespa64jtdc81jgetw",
-    "Fixture": "Netherlands vs Morocco",
-    "Home": "Netherlands",
-    "Away": "Morocco",
-    "Home Score": 3.0,
-    "Away Score": 4.0,
-    "Provider Status": "Played",
-    "Is Live": false,
-    "Is Complete": true,
-    "Provider Updated UTC": "2026-07-01T08:35:10+00:00",
-    "Checked At UTC": "2026-07-02T10:35:35.582922+00:00",
-    "Kickoff UTC": "2026-06-30T01:00:00+00:00",
-    "Score": "3-4",
-    "Kickoff (England)": "30 Jun 2026, 02:00:00 BST",
-    "Provider updated": "01 Jul 2026, 09:35:10 BST",
-    "App checked": "02 Jul 2026, 11:35:35 BST",
-    "Prediction Home Score": 1.0,
-    "Prediction Away Score": 1.0
-  },
-  {
     "matchlink": "ef8yvmn1ivhbrnjyj133kf7ys",
     "Fixture": "United States vs Bosnia-Herzegovina",
     "Home": "United States",
@@ -1652,11 +1632,31 @@
     "Provider Updated UTC": "2026-07-02T02:00:18+00:00",
     "Checked At UTC": "2026-07-03T13:39:50.679767+00:00",
     "Kickoff UTC": "2026-07-01T20:00:00+00:00",
+    "Score": "3-2",
+    "Kickoff (England)": "01 Jul 2026, 21:00:00 BST",
+    "Provider updated": "02 Jul 2026, 03:00:18 BST",
+    "App checked": "03 Jul 2026, 14:39:50 BST",
+    "Prediction Home Score": 2.0,
+    "Prediction Away Score": 2.0
+  },
+  {
+    "matchlink": "7hnbukswespa64jtdc81jgetw",
+    "Fixture": "Netherlands vs Morocco",
+    "Home": "Netherlands",
+    "Away": "Morocco",
+    "Home Score": 3.0,
+    "Away Score": 4.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-07-01T08:35:10+00:00",
+    "Checked At UTC": "2026-07-03T13:43:41.142164+00:00",
+    "Kickoff UTC": "2026-06-30T01:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
     "Provider updated": NaN,
     "App checked": NaN,
-    "Prediction Home Score": 2.0,
-    "Prediction Away Score": 2.0
+    "Prediction Home Score": 1.0,
+    "Prediction Away Score": 1.0
   }
 ]
