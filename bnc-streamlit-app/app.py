@@ -149,6 +149,31 @@ def first_available_round(
     return options
 
 
+def provider_completed_missing_matches(
+    fixture_data: pd.DataFrame,
+    live_statuses: pd.DataFrame,
+) -> pd.DataFrame:
+    """Return scored-by-provider fixtures that still have no saved points file."""
+    if fixture_data.empty or live_statuses.empty:
+        return fixture_data.iloc[0:0].copy()
+
+    provider_status = (
+        live_statuses.drop_duplicates(subset="matchlink", keep="last")
+        .set_index("matchlink")["Provider Status"]
+        .astype(str)
+        .str.strip()
+    )
+    completed_ids = set(provider_status[provider_status.eq("Played")].index.astype(str))
+    if not completed_ids:
+        return fixture_data.iloc[0:0].copy()
+
+    missing = fixture_data[
+        fixture_data["Data"].eq("Missing")
+        & fixture_data["matchlink"].astype(str).isin(completed_ids)
+    ].copy()
+    return missing
+
+
 CHART_COLORS = [
     "#0B6E4F",
     "#2A9D8F",
@@ -228,6 +253,16 @@ predictions = apply_live_scores(
 prediction_table = prediction_league_table(predictions)
 missing_due = due_missing_matches(data.schedule, POINTS_DIR)
 fixture_data = fixture_status(data.schedule, POINTS_DIR)
+provider_missing_due = provider_completed_missing_matches(fixture_data, live_statuses)
+if provider_missing_due.empty:
+    catchup_matches = missing_due.copy()
+else:
+    catchup_matches = (
+        pd.concat([missing_due, provider_missing_due], ignore_index=True)
+        .drop_duplicates(subset="matchlink", keep="first")
+        .sort_values("kickoff")
+        .reset_index(drop=True)
+    )
 ready_count = int((fixture_data["Data"] == "Ready").sum())
 
 st.markdown('<div class="bnc-kicker">WT Analysis</div>', unsafe_allow_html=True)
@@ -612,13 +647,14 @@ with data_tab:
 
     st.subheader("Catch up missing match points")
     st.write(
-        "This section catches up older fixtures that still have no point file. "
-        "It does not replace files already created by the live refresh."
+        "This section catches up completed fixtures that still have no point file. "
+        "It also includes provider-confirmed finished matches when the score feed "
+        "has updated but the points file does not exist yet."
     )
-    if missing_due.empty:
-        st.success("All older completed fixtures currently have point data.")
+    if catchup_matches.empty:
+        st.success("All completed fixtures currently have point data.")
     else:
-        due_display = missing_due[
+        due_display = catchup_matches[
             ["kickoff_uk", "description", "Home_Team", "Away_Team", "Round", "matchlink"]
         ].copy()
         st.dataframe(
@@ -634,7 +670,7 @@ with data_tab:
         )
 
         if st.button(
-            f"Run {len(missing_due)} missing completed match(es)",
+            f"Run {len(catchup_matches)} missing completed match(es)",
             type="primary",
             use_container_width=True,
         ):
@@ -646,8 +682,8 @@ with data_tab:
                     text=f"Processing {index} of {total}: {match_id}",
                 )
 
-            results = process_matches(missing_due, update_progress)
-            checked_statuses, completed_status_errors = fetch_statuses(missing_due)
+            results = process_matches(catchup_matches, update_progress)
+            checked_statuses, completed_status_errors = fetch_statuses(catchup_matches)
             live_statuses = merge_status_cache(live_statuses, checked_statuses)
             try:
                 persist_live_statuses(live_statuses)
@@ -697,11 +733,17 @@ with data_tab:
         if not live_matches.empty
         else set()
     )
+    completed_missing_ids = (
+        set(provider_missing_due["matchlink"].astype(str))
+        if not provider_missing_due.empty
+        else set()
+    )
     eligible_fixtures = fixture_data[
         fixture_data["Round"].isin(stage_filter)
         & (
             fixture_data["Data"].ne("Missing")
             | fixture_data["matchlink"].isin(live_ids)
+            | fixture_data["matchlink"].isin(completed_missing_ids)
         )
     ].copy()
     visible_fixtures = recent_fixtures(eligible_fixtures)
@@ -715,6 +757,9 @@ with data_tab:
         if not live_statuses.empty and "Score" in live_statuses
         else {}
     )
+    visible_fixtures.loc[
+        visible_fixtures["matchlink"].isin(completed_missing_ids), "Status"
+    ] = "Awaiting points"
     visible_fixtures.loc[
         visible_fixtures["matchlink"].isin(live_ids), "Status"
     ] = "Live"
