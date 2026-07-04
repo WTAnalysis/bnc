@@ -412,7 +412,9 @@ with predictions_tab:
     ]
     default_prediction_round = first_available_round(
         prediction_rounds,
-        ["R32", "R2", "Last 32"],
+        #["R32", "R2", "Last 32"],
+        ["R16", "R3", "Last 16"],
+
         fallback=prediction_rounds,
     )
     selected_prediction_rounds = st.multiselect(
