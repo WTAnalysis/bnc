@@ -53,6 +53,10 @@ def normalize_manager(value: object) -> str:
     return str(value).strip().replace("WillT", "Will T").replace("WillS", "Will S")
 
 
+def normalize_player_key(value: object) -> str:
+    return " ".join(str(value).strip().casefold().split())
+
+
 def normalize_stage_label(value: object) -> str | None:
     key = str(value).strip().casefold()
     return STAGE_ALIASES.get(key)
@@ -104,6 +108,7 @@ def load_picked_players(workbook_path: Path) -> pd.DataFrame:
     players["Manager"] = players["Manager"].map(normalize_manager)
     players["Player"] = players["Player"].astype(str).str.strip()
     players["player_id"] = players["player_id"].astype(str).str.strip()
+    players["player_key"] = players["Player"].map(normalize_player_key)
     return players
 
 
@@ -132,10 +137,11 @@ def load_points_overrides(
         result = overrides.copy()
         result["Stage"] = result["Stage"].map(normalize_stage_label)
         result["Player"] = result.get("Player", "").astype(str).str.strip()
+        result["player_key"] = result["Player"].map(normalize_player_key)
         result["player_id"] = result.get("player_id", "").astype(str).str.strip()
         result["Player Points"] = pd.to_numeric(result["Player Points"], errors="coerce")
         result = result.dropna(subset=["Stage", "Player Points"])
-        return result[["Stage", "Player", "player_id", "Player Points"]].reset_index(drop=True)
+        return result[["Stage", "Player", "player_key", "player_id", "Player Points"]].reset_index(drop=True)
 
     id_vars = [column for column in ["Manager", "Player", "player_id", "Notes"] if column in overrides.columns]
     stage_columns = [
@@ -153,13 +159,14 @@ def load_points_overrides(
     )
     result["Stage"] = result["Stage"].map(normalize_stage_label)
     result["Player"] = result.get("Player", "").astype(str).str.strip()
+    result["player_key"] = result["Player"].map(normalize_player_key)
     result["player_id"] = result.get("player_id", "").astype(str).str.strip()
     result["Player Points"] = pd.to_numeric(result["Player Points"], errors="coerce")
     result = result.dropna(subset=["Stage", "Player Points"])
     result = result[
         result["Player"].str.lower().ne("nan") | result["player_id"].str.lower().ne("nan")
     ].copy()
-    return result[["Stage", "Player", "player_id", "Player Points"]].reset_index(drop=True)
+    return result[["Stage", "Player", "player_key", "player_id", "Player Points"]].reset_index(drop=True)
 
 
 def apply_points_overrides(
@@ -170,14 +177,24 @@ def apply_points_overrides(
     if overrides.empty:
         return stage_points
 
+    players = players.copy()
+    if "player_key" not in players.columns:
+        players["player_key"] = players["Player"].map(normalize_player_key)
+
     player_lookup = (
-        players[["player_id", "Player"]]
+        players[["player_id", "Player", "player_key"]]
         .drop_duplicates(subset=["player_id"])
         .copy()
     )
     player_lookup["player_id"] = player_lookup["player_id"].astype(str).str.strip()
     player_lookup["Player"] = player_lookup["Player"].astype(str).str.strip()
     player_name_by_id = player_lookup.set_index("player_id")["Player"].to_dict()
+    player_id_by_key = (
+        player_lookup.dropna(subset=["player_key"])
+        .drop_duplicates(subset=["player_key"])
+        .set_index("player_key")["player_id"]
+        .to_dict()
+    )
 
     base = stage_points.copy()
     if "Player" not in base.columns:
@@ -188,6 +205,8 @@ def apply_points_overrides(
     base = base.set_index("override_key")
 
     overrides = overrides.copy()
+    if "player_key" not in overrides.columns:
+        overrides["player_key"] = overrides["Player"].map(normalize_player_key)
     overrides["player_id"] = overrides["player_id"].astype(str).str.strip()
     overrides["Player"] = overrides["Player"].astype(str).str.strip()
 
@@ -196,13 +215,12 @@ def apply_points_overrides(
         stage = str(row["Stage"])
         player_id = str(row["player_id"]).strip()
         player_name = str(row["Player"]).strip()
+        player_key = str(row["player_key"]).strip()
         points = float(row["Player Points"])
 
         resolved_id = player_id
         if not resolved_id or resolved_id.lower() == "nan":
-            matches = player_lookup[player_lookup["Player"].eq(player_name)]
-            if not matches.empty:
-                resolved_id = str(matches.iloc[0]["player_id"]).strip()
+            resolved_id = player_id_by_key.get(player_key, "")
 
         if not resolved_id or resolved_id.lower() == "nan":
             unresolved.append(
@@ -228,8 +246,8 @@ def apply_points_overrides(
 
 
 def load_selections(workbook_path: Path, players: pd.DataFrame) -> pd.DataFrame:
-    lookup = players.set_index(["Manager", "Player"])["player_id"].to_dict()
-    nation_lookup = players.set_index(["Manager", "Player"])["Nation"].to_dict()
+    lookup = players.set_index(["Manager", "player_key"])["player_id"].to_dict()
+    nation_lookup = players.set_index(["Manager", "player_key"])["Nation"].to_dict()
     rows: list[dict] = []
 
     for manager, sheet_name in MANAGER_SHEETS.items():
@@ -238,6 +256,7 @@ def load_selections(workbook_path: Path, players: pd.DataFrame) -> pd.DataFrame:
             player = str(sheet.iat[row_number, 1]).strip()
             if not player or player == "nan":
                 continue
+            player_key = normalize_player_key(player)
             for stage_index, stage in enumerate(STAGES):
                 selection_column = 4 + (stage_index * 3)
                 selection = sheet.iat[row_number, selection_column]
@@ -248,8 +267,8 @@ def load_selections(workbook_path: Path, players: pd.DataFrame) -> pd.DataFrame:
                         "Stage": stage,
                         "Position": sheet.iat[row_number, 0],
                         "Player": player,
-                        "Country": nation_lookup.get((manager, player), ""),
-                        "player_id": lookup.get((manager, player), ""),
+                        "Country": nation_lookup.get((manager, player_key), ""),
+                        "player_id": lookup.get((manager, player_key), ""),
                         "Selection": selection,
                         "Multiplier": SELECTION_MULTIPLIERS.get(selection, 0.0),
                     }
