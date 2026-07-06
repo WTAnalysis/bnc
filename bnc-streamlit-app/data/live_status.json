@@ -1720,26 +1720,6 @@
     "Prediction Away Score": 1.0
   },
   {
-    "matchlink": "b083yrj18tbck1z0og2evbhuc",
-    "Fixture": "Home vs Away",
-    "Home": "Home",
-    "Away": "Away",
-    "Home Score": NaN,
-    "Away Score": NaN,
-    "Provider Status": "Unknown",
-    "Is Live": false,
-    "Is Complete": false,
-    "Provider Updated UTC": null,
-    "Checked At UTC": "2026-07-05T22:07:14.784025+00:00",
-    "Kickoff UTC": "2026-07-06T00:00:00+00:00",
-    "Score": "-",
-    "Kickoff (England)": "06 Jul 2026, 01:00:00 BST",
-    "Provider updated": "Not available",
-    "App checked": "05 Jul 2026, 23:07:14 BST",
-    "Prediction Home Score": NaN,
-    "Prediction Away Score": NaN
-  },
-  {
     "matchlink": "71syco9icpb3gpojexfq9sh04",
     "Fixture": "Paraguay vs France",
     "Home": "Paraguay",
@@ -1792,11 +1772,31 @@
     "Provider Updated UTC": "2026-07-05T22:07:57+00:00",
     "Checked At UTC": "2026-07-05T22:09:03.806384+00:00",
     "Kickoff UTC": "2026-07-05T20:00:00+00:00",
+    "Score": "1-2",
+    "Kickoff (England)": "05 Jul 2026, 21:00:00 BST",
+    "Provider updated": "05 Jul 2026, 23:07:57 BST",
+    "App checked": "05 Jul 2026, 23:09:03 BST",
+    "Prediction Home Score": 1.0,
+    "Prediction Away Score": 2.0
+  },
+  {
+    "matchlink": "b083yrj18tbck1z0og2evbhuc",
+    "Fixture": "Mexico vs England",
+    "Home": "Mexico",
+    "Away": "England",
+    "Home Score": 2.0,
+    "Away Score": 3.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-07-06T06:04:46+00:00",
+    "Checked At UTC": "2026-07-06T09:51:54.623031+00:00",
+    "Kickoff UTC": "2026-07-06T00:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
     "Provider updated": NaN,
     "App checked": NaN,
-    "Prediction Home Score": 1.0,
-    "Prediction Away Score": 2.0
+    "Prediction Home Score": 2.0,
+    "Prediction Away Score": 3.0
   }
 ]
