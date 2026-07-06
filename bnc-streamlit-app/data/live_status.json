@@ -1760,26 +1760,6 @@
     "Prediction Away Score": 3.0
   },
   {
-    "matchlink": "9fqb3vpytcmgk9pozahr7iz9w",
-    "Fixture": "Brazil vs Norway",
-    "Home": "Brazil",
-    "Away": "Norway",
-    "Home Score": 1.0,
-    "Away Score": 2.0,
-    "Provider Status": "Played",
-    "Is Live": false,
-    "Is Complete": true,
-    "Provider Updated UTC": "2026-07-05T22:07:57+00:00",
-    "Checked At UTC": "2026-07-05T22:09:03.806384+00:00",
-    "Kickoff UTC": "2026-07-05T20:00:00+00:00",
-    "Score": "1-2",
-    "Kickoff (England)": "05 Jul 2026, 21:00:00 BST",
-    "Provider updated": "05 Jul 2026, 23:07:57 BST",
-    "App checked": "05 Jul 2026, 23:09:03 BST",
-    "Prediction Home Score": 1.0,
-    "Prediction Away Score": 2.0
-  },
-  {
     "matchlink": "b083yrj18tbck1z0og2evbhuc",
     "Fixture": "Mexico vs England",
     "Home": "Mexico",
@@ -1790,7 +1770,7 @@
     "Is Live": false,
     "Is Complete": true,
     "Provider Updated UTC": "2026-07-06T06:04:46+00:00",
-    "Checked At UTC": "2026-07-06T09:51:54.623031+00:00",
+    "Checked At UTC": "2026-07-06T12:01:50.723676+00:00",
     "Kickoff UTC": "2026-07-06T00:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
@@ -1798,5 +1778,25 @@
     "App checked": NaN,
     "Prediction Home Score": 2.0,
     "Prediction Away Score": 3.0
+  },
+  {
+    "matchlink": "9fqb3vpytcmgk9pozahr7iz9w",
+    "Fixture": "Brazil vs Norway",
+    "Home": "Brazil",
+    "Away": "Norway",
+    "Home Score": 1.0,
+    "Away Score": 2.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-07-06T01:08:54+00:00",
+    "Checked At UTC": "2026-07-06T12:01:50.989533+00:00",
+    "Kickoff UTC": "2026-07-05T20:00:00+00:00",
+    "Score": NaN,
+    "Kickoff (England)": NaN,
+    "Provider updated": NaN,
+    "App checked": NaN,
+    "Prediction Home Score": 1.0,
+    "Prediction Away Score": 2.0
   }
 ]
