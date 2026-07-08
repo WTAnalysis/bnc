@@ -1840,6 +1840,26 @@
     "Prediction Away Score": 1.0
   },
   {
+    "matchlink": "em70mwgw22fdt9i4womogw93o",
+    "Fixture": "Switzerland vs Colombia",
+    "Home": "Switzerland",
+    "Away": "Colombia",
+    "Home Score": 4.0,
+    "Away Score": 3.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-07-08T04:44:59+00:00",
+    "Checked At UTC": "2026-07-08T06:00:30.687533+00:00",
+    "Kickoff UTC": "2026-07-07T20:00:00+00:00",
+    "Score": NaN,
+    "Kickoff (England)": NaN,
+    "Provider updated": NaN,
+    "App checked": NaN,
+    "Prediction Home Score": 0.0,
+    "Prediction Away Score": 0.0
+  },
+  {
     "matchlink": "ceq6z0bte8pgdbc2uwxni0x78",
     "Fixture": "Argentina vs Egypt",
     "Home": "Argentina",
@@ -1850,7 +1870,7 @@
     "Is Live": false,
     "Is Complete": true,
     "Provider Updated UTC": "2026-07-07T20:53:16+00:00",
-    "Checked At UTC": "2026-07-07T22:52:05.626404+00:00",
+    "Checked At UTC": "2026-07-08T06:00:31.239531+00:00",
     "Kickoff UTC": "2026-07-07T16:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
@@ -1858,25 +1878,5 @@
     "App checked": NaN,
     "Prediction Home Score": 3.0,
     "Prediction Away Score": 2.0
-  },
-  {
-    "matchlink": "em70mwgw22fdt9i4womogw93o",
-    "Fixture": "Switzerland vs Colombia",
-    "Home": "Switzerland",
-    "Away": "Colombia",
-    "Home Score": 4.0,
-    "Away Score": 3.0,
-    "Provider Status": "Playing",
-    "Is Live": true,
-    "Is Complete": false,
-    "Provider Updated UTC": "2026-07-07T22:51:57+00:00",
-    "Checked At UTC": "2026-07-07T22:52:06.565458+00:00",
-    "Kickoff UTC": "2026-07-07T20:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN,
-    "Prediction Home Score": 0.0,
-    "Prediction Away Score": 0.0
   }
 ]
