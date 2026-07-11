@@ -1880,26 +1880,6 @@
     "Prediction Away Score": 2.0
   },
   {
-    "matchlink": "3a1xofm1wnspw1952k7e4du6s",
-    "Fixture": "Spain vs Belgium",
-    "Home": "Spain",
-    "Away": "Belgium",
-    "Home Score": 2.0,
-    "Away Score": 1.0,
-    "Provider Status": "Played",
-    "Is Live": false,
-    "Is Complete": true,
-    "Provider Updated UTC": "2026-07-10T21:02:02+00:00",
-    "Checked At UTC": "2026-07-10T21:03:32.026041+00:00",
-    "Kickoff UTC": "2026-07-10T19:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN,
-    "Prediction Home Score": 2.0,
-    "Prediction Away Score": 1.0
-  },
-  {
     "matchlink": "1ot14rn6x26nlaxaxt27wkrv8",
     "Fixture": "France vs Morocco",
     "Home": "France",
@@ -1912,11 +1892,31 @@
     "Provider Updated UTC": "2026-07-10T01:56:49+00:00",
     "Checked At UTC": "2026-07-10T21:03:32.438800+00:00",
     "Kickoff UTC": "2026-07-09T20:00:00+00:00",
+    "Score": "2-0",
+    "Kickoff (England)": "09 Jul 2026, 21:00:00 BST",
+    "Provider updated": "10 Jul 2026, 02:56:49 BST",
+    "App checked": "10 Jul 2026, 22:03:32 BST",
+    "Prediction Home Score": 2.0,
+    "Prediction Away Score": 0.0
+  },
+  {
+    "matchlink": "3a1xofm1wnspw1952k7e4du6s",
+    "Fixture": "Spain vs Belgium",
+    "Home": "Spain",
+    "Away": "Belgium",
+    "Home Score": 2.0,
+    "Away Score": 1.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-07-11T00:17:27+00:00",
+    "Checked At UTC": "2026-07-11T15:30:35.595688+00:00",
+    "Kickoff UTC": "2026-07-10T19:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
     "Provider updated": NaN,
     "App checked": NaN,
     "Prediction Home Score": 2.0,
-    "Prediction Away Score": 0.0
+    "Prediction Away Score": 1.0
   }
 ]
