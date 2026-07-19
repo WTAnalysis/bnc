@@ -51,6 +51,7 @@ class LeagueData:
     lineup_scores: pd.DataFrame
     stage_totals: pd.DataFrame
     draft_round_scores: pd.DataFrame
+    team_of_tournament: pd.DataFrame
     league_table: pd.DataFrame
 
 
@@ -254,6 +255,87 @@ def load_wc_bonus(
         .sum()
     )
     return player_bonus, manager_bonus
+
+
+def combine_player_bonus_frames(*frames: pd.DataFrame) -> pd.DataFrame:
+    valid_frames = [
+        frame[["Manager", "Player", "player_id", "Player Bonus"]].copy()
+        for frame in frames
+        if frame is not None and not frame.empty
+    ]
+    if not valid_frames:
+        return pd.DataFrame(columns=["Manager", "Player", "player_id", "Player Bonus"])
+    return (
+        pd.concat(valid_frames, ignore_index=True)
+        .groupby(["Manager", "Player", "player_id"], as_index=False)["Player Bonus"]
+        .sum()
+    )
+
+
+def build_team_of_tournament(
+    players: pd.DataFrame,
+    stage_points: pd.DataFrame,
+    player_bonus: pd.DataFrame | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    formation_limits = {"GK": 1, "DEF": 4, "MID": 4, "FWD": 2}
+    base_columns = ["Manager", "Player", "Nation", "Position", "player_id", "Pick"]
+    squad = players[base_columns].copy()
+    squad = squad[
+        squad["Manager"].astype(str).str.strip().str.lower().ne("nan")
+        & squad["Player"].astype(str).str.strip().str.lower().ne("nan")
+        & squad["player_id"].astype(str).str.strip().str.lower().ne("nan")
+        & squad["player_id"].astype(str).str.strip().ne("")
+        & squad["Position"].astype(str).str.strip().isin(formation_limits)
+    ].copy()
+    squad["Pick"] = pd.to_numeric(squad["Pick"], errors="coerce").astype("Int64")
+
+    stage_totals = (
+        stage_points.groupby("player_id", as_index=False)["Player Points"]
+        .sum()
+        .rename(columns={"Player Points": "Stage Total"})
+    )
+    squad = squad.merge(stage_totals, on="player_id", how="left")
+    squad["Stage Total"] = squad["Stage Total"].fillna(0.0)
+
+    if player_bonus is not None and not player_bonus.empty:
+        bonus_lookup = (
+            player_bonus.groupby(["Manager", "player_id"], as_index=False)["Player Bonus"]
+            .sum()
+        )
+        squad = squad.merge(bonus_lookup, on=["Manager", "player_id"], how="left")
+    else:
+        squad["Player Bonus"] = 0.0
+    squad["Player Bonus"] = squad["Player Bonus"].fillna(0.0)
+    squad["Total"] = squad["Stage Total"] + squad["Player Bonus"]
+
+    selected_frames = []
+    for position, size in formation_limits.items():
+        position_frame = squad[squad["Position"] == position].copy()
+        position_frame = position_frame.sort_values(
+            ["Total", "Pick", "Player"],
+            ascending=[False, False, True],
+        ).head(size)
+        selected_frames.append(position_frame)
+
+    if selected_frames:
+        selected = pd.concat(selected_frames, ignore_index=True)
+    else:
+        selected = squad.iloc[0:0].copy()
+
+    position_order = {"GK": 0, "DEF": 1, "MID": 2, "FWD": 3}
+    selected["Team Bonus"] = 3.0
+    selected = (
+        selected.sort_values(
+            ["Position", "Total", "Pick", "Player"],
+            ascending=[True, False, False, True],
+            key=lambda column: column.map(position_order) if column.name == "Position" else column,
+        )
+        .reset_index(drop=True)
+    )
+
+    player_bonus_bonus = selected[["Manager", "Player", "player_id"]].copy()
+    player_bonus_bonus["Player Bonus"] = selected["Team Bonus"]
+    return selected, player_bonus_bonus
 
 
 def apply_points_overrides(
@@ -463,7 +545,26 @@ def build_league_data(workbook_path: Path, points_dir: Path) -> LeagueData:
         overrides=load_points_overrides(workbook_path),
         players=players,
     )
-    player_bonus, manager_bonus = load_wc_bonus()
+    imported_player_bonus, imported_manager_bonus = load_wc_bonus()
+    team_of_tournament, team_bonus = build_team_of_tournament(
+        players,
+        stage_points,
+        imported_player_bonus,
+    )
+    player_bonus = combine_player_bonus_frames(imported_player_bonus, team_bonus)
+    manager_bonus = (
+        pd.concat(
+            [
+                imported_manager_bonus,
+                team_bonus.groupby("Manager", as_index=False)["Player Bonus"]
+                .sum()
+                .rename(columns={"Player Bonus": "Bonus"}),
+            ],
+            ignore_index=True,
+        )
+        .groupby("Manager", as_index=False)["Bonus"]
+        .sum()
+    )
     lineup = selections.merge(
         stage_points[["Stage", "player_id", "Player Points"]],
         on=["Stage", "player_id"],
@@ -515,6 +616,7 @@ def build_league_data(workbook_path: Path, points_dir: Path) -> LeagueData:
         lineup_scores=lineup,
         stage_totals=totals,
         draft_round_scores=draft_round_scores,
+        team_of_tournament=team_of_tournament,
         league_table=league,
     )
 

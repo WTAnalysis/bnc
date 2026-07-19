@@ -279,8 +279,8 @@ metric_2.metric("Leader points", f"{leader['Total']:.1f}" if leader is not None 
 metric_3.metric("Matches scored", f"{ready_count} / {len(data.schedule)}")
 metric_4.metric("Ready to process", len(missing_due))
 
-overview_tab, stages_tab, teams_tab, draft_tab, predictions_tab, data_tab = st.tabs(
-    ["League", "Stages", "Teams", "Draft Rounds", "Predictions", "Match data"]
+overview_tab, stages_tab, teams_tab, draft_tab, tot_tab, predictions_tab, data_tab = st.tabs(
+    ["League", "Stages", "Teams", "Draft Rounds", "Team of the Tournament", "Predictions", "Match data"]
 )
 
 with overview_tab:
@@ -409,6 +409,45 @@ with draft_tab:
             "Round": st.column_config.NumberColumn(format="%d"),
             "Rank": st.column_config.NumberColumn(format="%d"),
             "Pick": st.column_config.NumberColumn(format="%d"),
+            "Total": st.column_config.NumberColumn(format="%.1f"),
+        },
+    )
+
+with tot_tab:
+    st.subheader("Team of the Tournament")
+    st.caption(
+        "After imported player bonuses are applied, the top XI earns an extra 3 points "
+        "per player before draft round winners are calculated. Ties are broken by the "
+        "highest Pick number."
+    )
+    team_of_tournament = data.team_of_tournament.rename(
+        columns={
+            "Nation": "Country",
+            "Stage Total": "Points",
+            "Player Bonus": "Imported Bonus",
+            "Team Bonus": "Team Bonus",
+        }
+    ).copy()
+    display_columns = [
+        "Position",
+        "Player",
+        "Country",
+        "Manager",
+        "Pick",
+        "Points",
+        "Imported Bonus",
+        "Team Bonus",
+        "Total",
+    ]
+    st.dataframe(
+        format_points(team_of_tournament[display_columns], ["Points", "Imported Bonus", "Team Bonus", "Total"]),
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Pick": st.column_config.NumberColumn(format="%d"),
+            "Points": st.column_config.NumberColumn(format="%.1f"),
+            "Imported Bonus": st.column_config.NumberColumn(format="%.1f"),
+            "Team Bonus": st.column_config.NumberColumn(format="%.1f"),
             "Total": st.column_config.NumberColumn(format="%.1f"),
         },
     )
