@@ -1998,5 +1998,25 @@
     "App checked": NaN,
     "Prediction Home Score": 1.0,
     "Prediction Away Score": 2.0
+  },
+  {
+    "matchlink": "1wrjcpwj8cv0mb6d4yp67dams",
+    "Fixture": "France vs England",
+    "Home": "France",
+    "Away": "England",
+    "Home Score": 4.0,
+    "Away Score": 6.0,
+    "Provider Status": "Played",
+    "Is Live": false,
+    "Is Complete": true,
+    "Provider Updated UTC": "2026-07-19T02:18:29+00:00",
+    "Checked At UTC": "2026-07-19T03:21:33.816057+00:00",
+    "Kickoff UTC": "2026-07-18T21:00:00+00:00",
+    "Score": NaN,
+    "Kickoff (England)": NaN,
+    "Provider updated": NaN,
+    "App checked": NaN,
+    "Prediction Home Score": 4.0,
+    "Prediction Away Score": 6.0
   }
 ]
