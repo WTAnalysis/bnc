@@ -11,6 +11,7 @@ QUALIFIERS_PATH = DATA_DIR / "Opta Qualifiers.xlsx"
 PLAYERLIST_PATH = DATA_DIR / "playerlist.xlsx"
 LIVE_STATUS_PATH = DATA_DIR / "live_status.json"
 POINTS_OVERRIDE_PATH = DATA_DIR / "PointsOverride.xlsx"
+WC_BONUS_PATH = DATA_DIR / "wcbonus.xlsx"
 
 MANAGER_SHEETS = {
     "Barlow": "Barlow",

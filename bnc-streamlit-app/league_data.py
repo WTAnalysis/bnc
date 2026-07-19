@@ -12,10 +12,15 @@ from config import (
     POINTS_OVERRIDE_PATH,
     SELECTION_MULTIPLIERS,
     STAGES,
+    WC_BONUS_PATH,
 )
 
 POINTS_OVERRIDE_SHEET = "PointsOverride"
 POINTS_OVERRIDE_COLUMNS = ["Manager", "Player", "player_id", "G1", "G2", "G3", "R2", "R3", "QF", "SF", "F", "Notes"]
+WC_BONUS_MANAGER_COLUMN = "Manager"
+WC_BONUS_PLAYER_COLUMN = "Player"
+WC_BONUS_PLAYER_ID_COLUMN = "player_id"
+WC_BONUS_ONE_OFF_MANAGER_BONUSES = {"Taylor": 10.0}
 STAGE_ALIASES = {
     "g1": "G1",
     "g2": "G2",
@@ -169,6 +174,88 @@ def load_points_overrides(
     return result[["Stage", "Player", "player_key", "player_id", "Player Points"]].reset_index(drop=True)
 
 
+def load_wc_bonus(
+    bonus_path: Path | None = WC_BONUS_PATH,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    empty_player_bonus = pd.DataFrame(
+        columns=["Manager", "Player", "player_id", "Player Bonus"]
+    )
+    empty_manager_bonus = pd.DataFrame(columns=["Manager", "Bonus"])
+    if bonus_path is None or not bonus_path.exists():
+        one_off = pd.DataFrame(
+            [
+                {"Manager": manager, "Bonus": float(points)}
+                for manager, points in WC_BONUS_ONE_OFF_MANAGER_BONUSES.items()
+            ]
+        )
+        return empty_player_bonus, one_off
+
+    bonus = pd.read_excel(bonus_path)
+    bonus.columns = [str(column).strip() for column in bonus.columns]
+    if not {
+        WC_BONUS_MANAGER_COLUMN,
+        WC_BONUS_PLAYER_COLUMN,
+        WC_BONUS_PLAYER_ID_COLUMN,
+    }.issubset(bonus.columns):
+        one_off = pd.DataFrame(
+            [
+                {"Manager": manager, "Bonus": float(points)}
+                for manager, points in WC_BONUS_ONE_OFF_MANAGER_BONUSES.items()
+            ]
+        )
+        return empty_player_bonus, one_off
+
+    identity_columns = {
+        WC_BONUS_MANAGER_COLUMN,
+        WC_BONUS_PLAYER_COLUMN,
+        WC_BONUS_PLAYER_ID_COLUMN,
+    }
+    numeric_columns = [
+        column
+        for column in bonus.columns
+        if column not in identity_columns
+        and pd.api.types.is_numeric_dtype(bonus[column])
+    ]
+    result = bonus.copy()
+    result["Manager"] = result[WC_BONUS_MANAGER_COLUMN].map(normalize_manager)
+    result["Player"] = result[WC_BONUS_PLAYER_COLUMN].astype(str).str.strip()
+    result["player_id"] = result[WC_BONUS_PLAYER_ID_COLUMN].astype(str).str.strip()
+    if numeric_columns:
+        result["Player Bonus"] = (
+            result[numeric_columns].apply(pd.to_numeric, errors="coerce").fillna(0.0).sum(axis=1)
+        )
+    else:
+        result["Player Bonus"] = 0.0
+
+    player_bonus = (
+        result[
+            result["Manager"].astype(str).str.strip().ne("")
+            & result["Player"].astype(str).str.strip().ne("")
+            & result["player_id"].astype(str).str.strip().ne("")
+        ][["Manager", "Player", "player_id", "Player Bonus"]]
+        .groupby(["Manager", "Player", "player_id"], as_index=False)["Player Bonus"]
+        .sum()
+    )
+
+    manager_bonus = (
+        player_bonus.groupby("Manager", as_index=False)["Player Bonus"]
+        .sum()
+        .rename(columns={"Player Bonus": "Bonus"})
+    )
+    one_off = pd.DataFrame(
+        [
+            {"Manager": manager, "Bonus": float(points)}
+            for manager, points in WC_BONUS_ONE_OFF_MANAGER_BONUSES.items()
+        ]
+    )
+    manager_bonus = (
+        pd.concat([manager_bonus, one_off], ignore_index=True)
+        .groupby("Manager", as_index=False)["Bonus"]
+        .sum()
+    )
+    return player_bonus, manager_bonus
+
+
 def apply_points_overrides(
     stage_points: pd.DataFrame,
     overrides: pd.DataFrame,
@@ -300,6 +387,7 @@ def load_point_files(points_dir: Path, schedule: pd.DataFrame) -> pd.DataFrame:
 def build_draft_round_scores(
     players: pd.DataFrame,
     stage_points: pd.DataFrame,
+    player_bonus: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     base_columns = [
         "Round",
@@ -334,7 +422,21 @@ def build_draft_round_scores(
     for stage in STAGES:
         draft[stage] = draft[stage].fillna(0.0)
 
-    draft["Total"] = draft[STAGES].sum(axis=1)
+    if player_bonus is not None and not player_bonus.empty:
+        bonus_lookup = (
+            player_bonus.groupby(["Manager", "player_id"], as_index=False)["Player Bonus"]
+            .sum()
+        )
+        draft = draft.merge(
+            bonus_lookup,
+            on=["Manager", "player_id"],
+            how="left",
+        )
+    else:
+        draft["Player Bonus"] = 0.0
+    draft["Player Bonus"] = draft["Player Bonus"].fillna(0.0)
+
+    draft["Total"] = draft[STAGES].sum(axis=1) + draft["Player Bonus"]
     draft = draft.sort_values(
         ["Round", "Total", "Pick", "Player"],
         ascending=[True, False, False, True],
@@ -361,6 +463,7 @@ def build_league_data(workbook_path: Path, points_dir: Path) -> LeagueData:
         overrides=load_points_overrides(workbook_path),
         players=players,
     )
+    player_bonus, manager_bonus = load_wc_bonus()
     lineup = selections.merge(
         stage_points[["Stage", "player_id", "Player Points"]],
         on=["Stage", "player_id"],
@@ -377,7 +480,7 @@ def build_league_data(workbook_path: Path, points_dir: Path) -> LeagueData:
     totals["Stage"] = pd.Categorical(totals["Stage"], categories=STAGES, ordered=True)
     totals = totals.sort_values(["Stage", "Points", "Manager"], ascending=[True, False, True])
 
-    draft_round_scores = build_draft_round_scores(players, stage_points)
+    draft_round_scores = build_draft_round_scores(players, stage_points, player_bonus)
     draft_bonus = (
         draft_round_scores[draft_round_scores["Draft Rank"] == 1]
         .groupby("Manager", as_index=False)["Bonus"]
@@ -388,8 +491,14 @@ def build_league_data(workbook_path: Path, points_dir: Path) -> LeagueData:
         totals.groupby("Manager", as_index=False)["Points"]
         .sum()
     )
-    league = fantasy_totals.merge(draft_bonus, on="Manager", how="left")
-    league["Bonus"] = league["Bonus"].fillna(0).astype(int)
+    league = fantasy_totals.merge(manager_bonus, on="Manager", how="left")
+    league = league.merge(
+        draft_bonus.rename(columns={"Bonus": "Draft Bonus"}),
+        on="Manager",
+        how="left",
+    )
+    league["Bonus"] = league["Bonus"].fillna(0.0) + league["Draft Bonus"].fillna(0.0)
+    league = league.drop(columns=["Draft Bonus"])
     league["Total"] = league["Points"] + league["Bonus"]
     league = league.sort_values(
         ["Total", "Points", "Manager"],
