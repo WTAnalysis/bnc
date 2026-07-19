@@ -2000,26 +2000,6 @@
     "Prediction Away Score": 2.0
   },
   {
-    "matchlink": "57dotnff3xaafnxfltzt4czdg",
-    "Fixture": "Spain vs Argentina",
-    "Home": "Spain",
-    "Away": "Argentina",
-    "Home Score": 0.0,
-    "Away Score": 0.0,
-    "Provider Status": "Playing",
-    "Is Live": true,
-    "Is Complete": false,
-    "Provider Updated UTC": "2026-07-19T21:33:15+00:00",
-    "Checked At UTC": "2026-07-19T21:34:01.920510+00:00",
-    "Kickoff UTC": "2026-07-19T19:00:00+00:00",
-    "Score": NaN,
-    "Kickoff (England)": NaN,
-    "Provider updated": NaN,
-    "App checked": NaN,
-    "Prediction Home Score": 0.0,
-    "Prediction Away Score": 0.0
-  },
-  {
     "matchlink": "1wrjcpwj8cv0mb6d4yp67dams",
     "Fixture": "France vs England",
     "Home": "France",
@@ -2032,11 +2012,31 @@
     "Provider Updated UTC": "2026-07-19T02:18:29+00:00",
     "Checked At UTC": "2026-07-19T21:34:02.974041+00:00",
     "Kickoff UTC": "2026-07-18T21:00:00+00:00",
+    "Score": "4-6",
+    "Kickoff (England)": "18 Jul 2026, 22:00:00 BST",
+    "Provider updated": "19 Jul 2026, 03:18:29 BST",
+    "App checked": "19 Jul 2026, 22:34:02 BST",
+    "Prediction Home Score": 4.0,
+    "Prediction Away Score": 6.0
+  },
+  {
+    "matchlink": "57dotnff3xaafnxfltzt4czdg",
+    "Fixture": "Spain vs Argentina",
+    "Home": "Spain",
+    "Away": "Argentina",
+    "Home Score": 0.0,
+    "Away Score": 0.0,
+    "Provider Status": "Playing",
+    "Is Live": true,
+    "Is Complete": false,
+    "Provider Updated UTC": "2026-07-19T21:33:15+00:00",
+    "Checked At UTC": "2026-07-19T21:34:16.112164+00:00",
+    "Kickoff UTC": "2026-07-19T19:00:00+00:00",
     "Score": NaN,
     "Kickoff (England)": NaN,
     "Provider updated": NaN,
     "App checked": NaN,
-    "Prediction Home Score": 4.0,
-    "Prediction Away Score": 6.0
+    "Prediction Home Score": 0.0,
+    "Prediction Away Score": 0.0
   }
 ]
